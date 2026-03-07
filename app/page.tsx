@@ -1,5 +1,15 @@
-import React from 'react';
+'use client';
+
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+
+const SUB_NAV_ITEMS = [
+  { id: 'maintenance-service-fees', label: 'Maintenance & Service Fees' },
+  { id: 'receive-money', label: 'Receive Money' },
+  { id: 'send-money-payments', label: 'Send Money/ Make Payments' },
+  { id: 'additional-resources', label: 'Additional Resources' },
+  { id: 'limits', label: 'Limits' },
+];
 
 // ----------------------------------------------------------------------
 // 1. Reusable Components (Theme-matched)
@@ -26,13 +36,12 @@ const FeeRow = ({ label, desc, price, period, isHighlight = false }: any) => (
         <span className="text-sm font-bold text-slate-900 group-hover:text-[#E61C5D] transition-colors">
           {label}
         </span>
-        {isHighlight && <Badge color="pink">Popular</Badge>}
       </div>
       {desc && <p className="text-xs text-slate-500 mt-1 leading-relaxed max-w-sm">{desc}</p>}
     </div>
     
     <div className="text-left sm:text-right shrink-0">
-      <div className={`text-base font-bold ${price === 'FREE' ? 'text-emerald-500' : 'text-slate-900'}`}>
+      <div className={`text-base font-bold ${price === 'FREE' || price === '$0.00' ? 'text-emerald-500' : 'text-slate-900'}`}>
         {price}
       </div>
       {period && <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mt-0.5">{period}</div>}
@@ -40,25 +49,108 @@ const FeeRow = ({ label, desc, price, period, isHighlight = false }: any) => (
   </div>
 );
 
-const FeeSection = ({ title, icon, children }: any) => (
-  <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden hover:shadow-xl hover:shadow-slate-200/40 transition-all duration-500">
-    <div className="p-8 border-b border-slate-50 flex items-center gap-4 bg-slate-50/50">
-      <div className="w-12 h-12 bg-white rounded-2xl border border-slate-100 flex items-center justify-center text-[#E61C5D] shadow-sm">
-        {icon}
-      </div>
-      <h3 className="text-xl font-bold text-slate-900">{title}</h3>
-    </div>
-    <div className="p-8 pt-2 divide-y divide-slate-100">
+const FeeSubsection = ({ title, children, id }: any) => (
+  <div className="mb-8" id={id}>
+    <h4 className="text-lg font-bold text-center text-[#E61C5D] mb-4 pb-2 border-b border-slate-200">{title}</h4>
+    <div className="space-y-1">
       {children}
     </div>
   </div>
 );
+
+
+const AccountTypeNavigation = ({ activeAccountType, setActiveAccountType }: any) => {
+  const accountTypes = [
+    { id: 'personal', label: 'Personal' },
+    { id: 'business', label: 'Business' }
+  ];
+
+  return (
+    <div className="sticky top-[68px] z-40 bg-gradient-to-b from-white/90 to-white/60 backdrop-blur-lg border-b border-white/20 shadow-lg rounded-2xl">
+      <div className="container mx-auto px-6">
+        <div className="flex items-center justify-center gap-8 py-4">
+          {accountTypes.map((account) => (
+            <button
+              key={account.id}
+              onClick={() => setActiveAccountType(account.id)}
+              className={`px-8 py-3 text-sm font-semibold rounded-xl transition-all duration-200 ${
+                activeAccountType === account.id
+                  ? 'bg-[#E61C5D] text-white shadow-lg shadow-[#E61C5D]/25'
+                  : 'text-slate-600 hover:text-[#E61C5D] hover:bg-slate-50'
+              }`}
+            >
+              {account.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const SubNavigation = ({ activeSection, setActiveSection, accountType }: any) => {
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      const headerHeight = 145; // Sub Navigation sticky position (top-[145px])
+      
+      const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+      const offsetPosition = elementPosition - headerHeight - 10; // 10px extra spacing
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
+    setActiveSection(sectionId);
+  };
+  return (
+    <div className="sticky top-[145px] z-30 bg-gradient-to-b from-white/90 to-white/60 backdrop-blur-lg border-b border-white/20 shadow-lg rounded-2xl">
+      <div className="container mx-auto px-6">
+        <div className="flex items-center justify-center gap-6 py-3 overflow-x-auto">
+          {SUB_NAV_ITEMS.map((item) => {
+            const sectionId = `${accountType}-${item.id}`;
+            return (
+              <button
+                key={item.id}
+                onClick={() => scrollToSection(sectionId)}
+                className={`px-4 py-2 text-xs font-medium whitespace-nowrap rounded-lg transition-all duration-200 ${
+                  activeSection === sectionId
+                    ? 'bg-[#E61C5D] text-white shadow-md'
+                    : 'text-slate-600 hover:text-[#E61C5D] hover:bg-white'
+                }`}
+              >
+                {item.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const AccountTypeSection = ({ children }: any) => (
+  <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden hover:shadow-xl hover:shadow-slate-200/40 transition-all duration-500">
+    <div className="p-8">
+      {children}
+    </div>
+  </div>
+);
+
 
 // ----------------------------------------------------------------------
 // 2. Main Page Content
 // ----------------------------------------------------------------------
 
 export default function FeesPage() {
+  const [activeAccountType, setActiveAccountType] = useState('personal');
+  const [activeSection, setActiveSection] = useState('personal-maintenance-service-fees');
+
+  useEffect(() => {
+    setActiveSection(`${activeAccountType}-maintenance-service-fees`);
+  }, [activeAccountType]);
+
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-[#E61C5D] selection:text-white">
       
@@ -98,22 +190,6 @@ export default function FeesPage() {
           <p className="text-lg text-slate-500 mb-12 max-w-2xl mx-auto leading-relaxed">
             We believe in complete transparency. Here is exactly what you pay, and what you don't.
           </p>
-
-          {/* Quick Highlight Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-left">
-             {[
-               { label: "P2P Transfers", val: "FREE", sub: "Instant" },
-               { label: "Monthly Maintenance", val: "FREE", sub: "With conditions*" },
-               { label: "Virtual Card", val: "$3.00", sub: "One-time fee" },
-               { label: "Bank Transfer", val: "1.00%", sub: "Standard rate" },
-             ].map((item, i) => (
-               <div key={i} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:border-[#E61C5D]/20 transition-colors">
-                 <div className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">{item.label}</div>
-                 <div className="text-2xl font-bold text-slate-900 mb-1">{item.val}</div>
-                 <div className="text-[10px] font-medium text-slate-400">{item.sub}</div>
-               </div>
-             ))}
-          </div>
         </div>
       </section>
 
@@ -121,104 +197,292 @@ export default function FeesPage() {
       <section className="py-12 px-6">
         <div className="container mx-auto max-w-5xl space-y-10">
           
-          {/* 1. Account & Subscription */}
-          <FeeSection 
-            title="Account & Subscription" 
-            icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>}
-          >
-            <FeeRow 
-              label="USD Account Subscription" 
-              desc="Access to US Bank Account features. Billed every 6 months." 
-              price="$10.00" 
-              period="Per 6 Months"
-              isHighlight={true}
-            />
-            <FeeRow 
-              label="Monthly Maintenance" 
-              desc="Waived if you transfer $2,000+ to Bangladesh annually." 
-              price="FREE" 
-              period="Condition Apply" 
-            />
-            <FeeRow 
-              label="BDT Account Only" 
-              desc="Maintenance fee if you strictly use BDT account only." 
-              price="৳199.00" 
-              period="Per Year" 
-            />
-          </FeeSection>
+          {/* Account Type Navigation */}
+          <AccountTypeNavigation 
+            activeAccountType={activeAccountType} 
+            setActiveAccountType={setActiveAccountType} 
+          />
+          
+          {/* Sub Navigation */}
+          <SubNavigation 
+            activeSection={activeSection} 
+            setActiveSection={setActiveSection} 
+            accountType={activeAccountType}
+          />
+          
+          {/* Personal Account Section */}
+          {activeAccountType === 'personal' && (
+            <AccountTypeSection>
+              <FeeSubsection title="Maintenance & Service Fees" id="personal-maintenance-service-fees">
+                <FeeRow 
+                  label="Maintenance Fee (Personal 1 USD & 1 BDT Account) - Every 6 months" 
+                  desc="$10 / FREE If you bring $5,000 / year" 
+                  price="$10" 
+                  period="Every 6 months"
+                />
+                <FeeRow 
+                  label="Business USD Accounts (up to 2 USD Accounts)" 
+                  price="FREE" 
+                />
+                <FeeRow 
+                  label="Maintenance Fee (BDT Account Only) - Yearly" 
+                  desc="Payable in every 12 months. FREE For USD Account Holder." 
+                  price="৳199.00" 
+                  period="Yearly"
+                />
+                <FeeRow 
+                  label="Priyo Virtual Card (Debit) - One-time" 
+                  desc="The first virtual debit card for your personal account is free. Any additional cards incur a fee" 
+                  price="$3.00" 
+                  period="One-time"
+                />
+                <FeeRow 
+                  label="Priyo Physical Card (Plastic) - Yearly" 
+                  desc="You can order Physical Mastercard from your account. This is yearly fee for a single card. Shipping Charge is separate." 
+                  price="$19.95" 
+                  period="Yearly"
+                />
+                <FeeRow 
+                  label="Physical Card Shipping (Standard)" 
+                  desc="Regular Shipping takes 3-5 business days in the USA, and 3-6 weeks globally. If you want FedEx, then the Fee is $40" 
+                  price="$5.00" 
+                  period="Per shipment"
+                />
+              </FeeSubsection>
 
-          {/* 2. Cards */}
-          <FeeSection 
-            title="Cards" 
-            icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>}
-          >
-            <FeeRow 
-              label="Virtual Debit Card" 
-              desc="Instant issuance for online shopping. First card is free for Personal accounts." 
-              price="$3.00" 
-              period="One-time" 
-            />
-            <FeeRow 
-              label="Physical Mastercard" 
-              desc="Plastic card mailed to your address. Shipping charged separately." 
-              price="$19.95" 
-              period="Per Year" 
-            />
-            <FeeRow 
-              label="Standard Shipping" 
-              desc="Global delivery (3-6 weeks)." 
-              price="$5.00" 
-              period="Per Delivery" 
-            />
-             <FeeRow 
-              label="Express Shipping (FedEx)" 
-              desc="Fast tracked delivery." 
-              price="$40.00" 
-              period="Per Delivery" 
-            />
-          </FeeSection>
+              <FeeSubsection title="Receive Money" id="personal-receive-money">
+                <FeeRow 
+                  label="From another Priyo Pay Customer (P2P)" 
+                  desc="You can receive money from another Priyo Pay user" 
+                  price="$0.00" 
+                />
+                <FeeRow 
+                  label="Incoming ACH - from Any Bank in the USA" 
+                  desc="First 10 transactions are free every month" 
+                  price="$0.25" 
+                  period="Per transaction"
+                />
+                <FeeRow 
+                  label="Incoming Wire (Domestic)" 
+                  desc="Receiving Wire from any Bank in the USA" 
+                  price="$10.00" 
+                  period="Per transaction"
+                />
+                <FeeRow 
+                  label="Incoming Wire - International (SWIFT)" 
+                  desc="Receiving Wire from anywhere in the world via SWIFT." 
+                  price="$25.00" 
+                  period="Per transaction"
+                />
+                <FeeRow 
+                  label="Incoming Credit (via Card) - from any Source" 
+                  desc="Minimum Fee $1.00." 
+                  price="2.00%" 
+                  period="Per transaction"
+                />
+              </FeeSubsection>
 
-          {/* 3. Money Movement */}
-          <FeeSection 
-            title="Transfers & Payments" 
-            icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>}
-          >
-            <FeeRow 
-              label="Receive Money (P2P)" 
-              desc="From another Priyo Pay user." 
-              price="FREE" 
-            />
-            <FeeRow 
-              label="Receive from US Bank (ACH)" 
-              desc="Direct deposit. First 10 transactions/month are free." 
-              price="$0.10" 
-              period="Per Transaction" 
-            />
-            <FeeRow 
-              label="Receive Wire (Domestic)" 
-              desc="Same-day wire from US banks." 
-              price="$10.00" 
-              period="Per Transaction" 
-            />
-            <FeeRow 
-              label="Send to US Bank (ACH)" 
-              desc="Standard transfer to any US bank." 
-              price="1.00%" 
-              period="No Min Fee" 
-            />
-            <FeeRow 
-              label="Send Wire (Domestic)" 
-              desc="Urgent transfer to US bank." 
-              price="$10 + 1%" 
-              period="Per Transaction" 
-            />
-            <FeeRow 
-              label="International Card Spend" 
-              desc="Spending outside the USA." 
-              price="1.00%" 
-              period="No Min Fee" 
-            />
-          </FeeSection>
+              <FeeSubsection title="Send Money/ Make Payments" id="personal-send-money-payments">
+                <FeeRow 
+                  label="Payment (via Card) - to Third-Party Money Transmitters" 
+                  desc="2% of total transaction amount on payment via Card to third-party money transmitters such as Western Union, Remitly, MoneyGram, Taptap Send, PayPal, and similar platforms. Minimum Fee $1.00." 
+                  price="2.00%" 
+                  period="Per transaction"
+                />
+                <FeeRow 
+                  label="Cross Border Payment (via Card) - outside of USA" 
+                  desc="1% of total transaction amount on payment via Card outside of the USA. No Minimum Fee." 
+                  price="1.00%" 
+                  period="Per transaction"
+                />
+                <FeeRow 
+                  label="Outgoing ACH (USA Only)" 
+                  desc="Any Bank in the USA" 
+                  price="1.00%" 
+                  period="Per transaction"
+                />
+                <FeeRow 
+                  label="Outgoing Domestic Wire" 
+                  desc="Sending Wire to any Bank in the USA" 
+                  price="$10.00 + 1% of transfer amount" 
+                  period="Per transaction"
+                />
+                <FeeRow 
+                  label="Payment to another Priyo User (P2P)" 
+                  desc="1% of the transaction amount. Minimum Fee: $1.00. Maximum $1,000.00." 
+                  price="1.00%" 
+                  period="Per transaction"
+                />
+                <FeeRow 
+                  label="Transfer from USD to BDT" 
+                  desc="Minimum Fee $0.99. The transaction fee is also displayed during the transaction." 
+                  price="1.00%" 
+                  period="Per transaction"
+                />
+                <FeeRow 
+                  label="ATM Withdraw (Globally)" 
+                  desc="Minimum fee $3.00." 
+                  price="1.00%" 
+                  period="Per transaction"
+                />
+              </FeeSubsection>
+
+              <FeeSubsection title="Additional Resources" id="personal-additional-resources">
+                <FeeRow 
+                  label="Personal USD Accounts" 
+                  price="$10.00" 
+                  period="Every 6 months"
+                />
+                <FeeRow 
+                  label="Business USD Accounts (up to 2 USD Accounts)" 
+                  price="FREE" 
+                />
+                <FeeRow 
+                  label="Virtual Card for Personal Accounts" 
+                  price="$3.00" 
+                  period="One-time per card"
+                />
+                <FeeRow 
+                  label="Virtual Card for Business Accounts (up to 20 Virtual Cards)" 
+                  price="FREE" 
+                />
+                <FeeRow 
+                  label="Personal and Business Physical Card" 
+                  desc="For the first year including shipping charge" 
+                  price="$25.00" 
+                  period="First year"
+                />
+                <FeeRow 
+                  label="Personal and Business Physical Card" 
+                  desc="From 2nd year and onwards" 
+                  price="$19.95" 
+                  period="Per year"
+                />
+              </FeeSubsection>
+            </AccountTypeSection>
+          )}
+
+          {/* Business Account Section */}
+          {activeAccountType === 'business' && (
+            <AccountTypeSection>
+              <FeeSubsection title="Maintenance & Service Fees" id="business-maintenance-service-fees">
+                <FeeRow 
+                  label="USD Account Subscription" 
+                  desc="Access to US Bank Account features. Billed every 6 months." 
+                  price="$25.00" 
+                  period="Per 6 Months"
+                />
+                <FeeRow 
+                  label="Monthly Maintenance" 
+                  desc="Waived if you transfer $10,000+ to Bangladesh annually." 
+                  price="FREE" 
+                  period="Condition Apply" 
+                />
+                <FeeRow 
+                  label="API Access" 
+                  desc="Programmatic access to payment features." 
+                  price="$50.00" 
+                  period="Per Month" 
+                />
+              </FeeSubsection>
+
+              <FeeSubsection title="Receive Money" id="business-receive-money">
+                <FeeRow 
+                  label="Receive Money (P2P)" 
+                  desc="From another Priyo Pay user." 
+                  price="FREE" 
+                />
+                <FeeRow 
+                  label="Receive from US Bank (ACH)" 
+                  desc="Direct deposit. First 20 transactions/month are free." 
+                  price="$0.10" 
+                  period="Per Transaction" 
+                />
+                <FeeRow 
+                  label="Receive Wire (Domestic)" 
+                  desc="Same-day wire from US banks." 
+                  price="$10.00" 
+                  period="Per Transaction" 
+                />
+                <FeeRow 
+                  label="Batch Payments Processing" 
+                  desc="Process multiple payments at once." 
+                  price="0.50%" 
+                  period="Per Transaction" 
+                />
+              </FeeSubsection>
+
+              <FeeSubsection title="Send Money/ Make Payments" id="business-send-money-payments">
+                <FeeRow 
+                  label="Send to US Bank (ACH)" 
+                  desc="Standard transfer to any US bank." 
+                  price="0.80%" 
+                  period="No Min Fee" 
+                />
+                <FeeRow 
+                  label="Send Wire (Domestic)" 
+                  desc="Urgent transfer to US bank." 
+                  price="$8 + 0.8%" 
+                  period="Per Transaction" 
+                />
+                <FeeRow 
+                  label="International Card Spend" 
+                  desc="Spending outside the USA." 
+                  price="0.80%" 
+                  period="No Min Fee" 
+                />
+                <FeeRow 
+                  label="Payroll Processing" 
+                  desc="Bulk employee payments." 
+                  price="1.00%" 
+                  period="Per Transaction" 
+                />
+              </FeeSubsection>
+
+              <FeeSubsection title="Additional Resources" id="business-additional-resources">
+                <FeeRow 
+                  label="Virtual Debit Card" 
+                  desc="Instant issuance for online shopping. First 2 cards free." 
+                  price="FREE" 
+                  period="First 2 Cards" 
+                  isHighlight={true}
+                />
+                <FeeRow 
+                  label="Additional Virtual Card" 
+                  desc="Extra virtual cards for team members." 
+                  price="$2.50" 
+                  period="One-time" 
+                />
+                <FeeRow 
+                  label="Physical Mastercard" 
+                  desc="Plastic card mailed to your address. Shipping charged separately." 
+                  price="$15.00" 
+                  period="Per Year" 
+                />
+                <FeeRow 
+                  label="Corporate Cards" 
+                  desc="Managed cards for employees with spending limits." 
+                  price="$25.00" 
+                  period="Per Card/Year" 
+                />
+              </FeeSubsection>
+
+              <FeeSubsection title="Limits" id="business-limits">
+                <FeeRow 
+                  label="Standard Shipping" 
+                  desc="Global delivery (3-6 weeks)." 
+                  price="FREE" 
+                  period="First Order" 
+                />
+                <FeeRow 
+                  label="Express Shipping (FedEx)" 
+                  desc="Fast tracked delivery." 
+                  price="$35.00" 
+                  period="Per Delivery" 
+                />
+              </FeeSubsection>
+            </AccountTypeSection>
+          )}
 
         </div>
       </section>
