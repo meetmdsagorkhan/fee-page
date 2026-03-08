@@ -2,15 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
-
-// Import new components
-import FeeCalculator from '@/components/FeeCalculator';
-import ScrollProgress from '@/components/ScrollProgress';
-import ActiveNavbar from '@/components/ActiveNavbar';
-import PricingCards from '@/components/PricingCards';
-import MotionWrapper from '@/components/MotionWrapper';
-import { slideUpVariants, staggerContainer, fadeInVariants } from '@/components/MotionWrapper';
 
 const SUB_NAV_ITEMS = [
   { id: 'maintenance-service-fees', label: 'Maintenance & Service Fees' },
@@ -18,75 +9,6 @@ const SUB_NAV_ITEMS = [
   { id: 'send-money-payments', label: 'Payments & Transfers' },
   { id: 'additional-resources', label: 'Additional Resources' },
   { id: 'limits', label: 'Account & Usage Limits' },
-];
-
-// Scroll progress sections
-const SCROLL_SECTIONS = [
-  { id: 'hero', label: 'Home' },
-  { id: 'calculator', label: 'Calculator' },
-  { id: 'fees', label: 'Fees' },
-  { id: 'pricing', label: 'Pricing' },
-  { id: 'faq', label: 'FAQ' },
-  { id: 'contact', label: 'Contact' },
-];
-
-// Pricing plans data
-const PRICING_PLANS = [
-  {
-    id: 'personal',
-    name: 'Personal',
-    price: 'FREE',
-    period: 'No setup fees',
-    description: 'Perfect for individuals and families sending money internationally.',
-    features: [
-      'Up to 2 USD accounts',
-      'Up to 2 virtual cards',
-      '1 physical card',
-      '$1,000 daily transaction limit',
-      'No monthly maintenance fee',
-      '24/7 customer support'
-    ],
-    cta: 'Get Started Free',
-    ctaLink: 'https://pay.priyo.com'
-  },
-  {
-    id: 'business',
-    name: 'Business',
-    price: '$0',
-    period: 'No monthly fees',
-    description: 'Ideal for businesses and entrepreneurs managing international payments.',
-    features: [
-      'Up to 2 USD accounts',
-      'Up to 20 virtual cards',
-      '1 physical card per account',
-      '$10,000 daily transaction limit',
-      'FREE maintenance forever',
-      'Priority business support',
-      'Team management tools'
-    ],
-    highlighted: true,
-    cta: 'Start Business Account',
-    ctaLink: 'https://pay.priyo.com/business'
-  },
-  {
-    id: 'enterprise',
-    name: 'Enterprise',
-    price: 'Custom',
-    period: 'Tailored pricing',
-    description: 'Advanced solutions for large organizations with high-volume needs.',
-    features: [
-      'Unlimited USD accounts',
-      'Unlimited virtual cards',
-      'Multiple physical cards',
-      'Custom transaction limits',
-      'Dedicated account manager',
-      'API access & integrations',
-      'Advanced reporting & analytics',
-      'Custom compliance solutions'
-    ],
-    cta: 'Contact Sales',
-    ctaLink: '/contact'
-  }
 ];
 
 // ----------------------------------------------------------------------
@@ -232,160 +154,31 @@ export default function FeesPage() {
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-[#E61C5D] selection:text-white">
       
-      {/* Active Navigation */}
-      <ActiveNavbar items={SCROLL_SECTIONS} />
-
-      {/* Scroll Progress Indicator */}
-      <ScrollProgress sections={SCROLL_SECTIONS} />
-
-      {/* --- HERO SECTION --- */}
-      <motion.section 
-        id="hero"
-        className="relative py-24 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white overflow-hidden"
-        initial="hidden"
-        animate="visible"
-        variants={staggerContainer}
-      >
-        {/* Background Effects */}
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#E61C5D]/10 blur-[100px] rounded-full translate-x-1/3 -translate-y-1/2 pointer-events-none"></div>
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-600/10 blur-[80px] rounded-full -translate-x-1/3 translate-y-1/3 pointer-events-none"></div>
-        
-        <div className="container mx-auto px-6 relative z-10 text-center max-w-4xl">
-          <motion.div
-            variants={slideUpVariants}
-            className="mb-8"
-          >
-            <Badge color="pink">Transparent Pricing</Badge>
-          </motion.div>
-          
-          <motion.h1 
-            variants={slideUpVariants}
-            className="text-5xl md:text-6xl font-bold mb-6 tracking-tight"
-          >
-            International Banking
-            <span className="block text-[#E61C5D]">Made Simple</span>
-          </motion.h1>
-          
-          <motion.p 
-            variants={slideUpVariants}
-            className="text-xl text-slate-300 mb-10 leading-relaxed max-w-2xl mx-auto"
-          >
-            Send money globally, manage multi-currency accounts, and enjoy transparent fees with Priyo Pay. 
-            No hidden charges, just straightforward banking.
-          </motion.p>
-          
-          <motion.div 
-            variants={slideUpVariants}
-            className="flex flex-col sm:flex-row justify-center gap-4"
-          >
-            <motion.a
-              href="https://pay.priyo.com"
-              variants={slideUpVariants}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="inline-flex items-center justify-center gap-2 bg-[#E61C5D] text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-[#c9154e] hover:shadow-lg hover:shadow-[#E61C5D]/25 transition-all duration-300"
-            >
-              Get Started FREE
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-              </svg>
-            </motion.a>
-            
-            <motion.a
-              href="#calculator"
-              variants={slideUpVariants}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="inline-flex items-center justify-center gap-2 bg-white/10 text-white border border-white/20 px-8 py-4 rounded-2xl font-bold text-lg hover:bg-white/20 transition-all duration-300 backdrop-blur-sm"
-            >
-              Calculate Fees
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-              </svg>
-            </motion.a>
-          </motion.div>
+      {/* --- HEADER --- */}
+      <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
+        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2">
+             <span className="text-xl font-extrabold text-slate-900 tracking-tight">Priyo Pay</span>
+          </Link>
+          <div className="flex items-center gap-4">
+            <Link href="https://pay.priyo.com" className="bg-slate-900 text-white px-5 py-2 rounded-xl font-semibold text-sm hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/10">
+                Open Account
+            </Link>
+          </div>
         </div>
-      </motion.section>
+      </header>
 
-      {/* --- FEE CALCULATOR SECTION --- */}
-      <motion.section 
-        id="calculator"
-        className="py-20 bg-white"
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        variants={staggerContainer}
-      >
-        <div className="container mx-auto px-6">
-          <motion.div
-            variants={slideUpVariants}
-            className="text-center mb-12"
-          >
-            <h2 className="text-4xl font-bold text-slate-900 mb-4">
-              Calculate Your <span className="text-[#E61C5D]">Education Costs</span>
-            </h2>
-            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-              Get instant estimates for tuition, living expenses, and total costs for studying abroad.
-            </p>
-          </motion.div>
-          
-          <FeeCalculator />
-        </div>
-      </motion.section>
-      {/* --- PRICING SECTION --- */}
-      <motion.section 
-        id="pricing"
-        className="py-20 bg-slate-50"
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        variants={staggerContainer}
-      >
-        <div className="container mx-auto px-6">
-          <motion.div
-            variants={slideUpVariants}
-            className="text-center mb-16"
-          >
-            <Badge color="pink" className="mb-4">Choose Your Plan</Badge>
-            <h2 className="text-4xl font-bold text-slate-900 mb-4">
-              Simple, Transparent <span className="text-[#E61C5D]">Pricing</span>
-            </h2>
-            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-              Whether you're an individual or a business, we have the perfect plan for your international banking needs.
-            </p>
-          </motion.div>
-          
-          <PricingCards plans={PRICING_PLANS} />
-        </div>
-      </motion.section>
-
-      {/* --- FEES SECTION --- */}
-      <motion.section 
-        id="fees"
-        className="relative pt-20 pb-16 bg-white"
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        variants={staggerContainer}
-      >
+      {/* --- HERO: Quick Summary --- */}
+      <section className="relative pt-20 pb-16">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full overflow-hidden -z-10 pointer-events-none">
           <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#E61C5D]/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/4"></div>
         </div>
 
         <div className="container mx-auto px-6 max-w-5xl text-center">
-          <motion.div
-            variants={slideUpVariants}
-            className="mb-12"
-          >
-            <Badge color="pink" className="mb-4">Detailed Fee Structure</Badge>
-            <h2 className="text-4xl font-bold text-slate-900 mb-4">
-              Complete <span className="text-[#E61C5D]">Fee Breakdown</span>
-            </h2>
-            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-              Transparent pricing with no hidden fees. See exactly what you pay for every service.
-            </p>
-          </motion.div>
-        </div>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-200 shadow-sm text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-6">
+             <span className="w-1.5 h-1.5 rounded-full bg-[#E61C5D]"></span>
+             Transparent Pricing
+          </div>
           
           <h1 className="text-4xl md:text-6xl font-extrabold text-slate-900 mb-6 tracking-tight leading-[1.1]">
             Simple Fees. <br />
@@ -797,23 +590,11 @@ export default function FeesPage() {
       </section>
 
       {/* --- FAQ SECTION --- */}
-      <motion.section 
-        id="faq"
-        className="py-24 bg-white border-t border-slate-100"
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        variants={staggerContainer}
-      >
-        <div className="container mx-auto px-6 max-w-3xl">
-          <motion.div
-            variants={slideUpVariants}
-            className="text-center mb-12"
-          >
-            <Badge color="pink" className="mb-4">Got Questions?</Badge>
-            <h2 className="text-3xl font-bold text-slate-900 mb-4">Common Questions</h2>
-            <p className="text-slate-500">Clarifications on our fee structure and account maintenance.</p>
-          </motion.div>
+<section className="py-24 bg-white border-t border-slate-100">
+  <div className="container mx-auto px-6 max-w-3xl">
+    <div className="text-center mb-12">
+      <h2 className="text-3xl font-bold text-slate-900 mb-4">Common Questions</h2>
+      <p className="text-slate-500">Clarifications on our fee structure and account maintenance.</p>
     </div>
 
     <div className="space-y-4">
@@ -1005,45 +786,23 @@ export default function FeesPage() {
 </section>
 
       {/* --- FOOTER CTA --- */}
-      <motion.section 
-        id="contact"
-        className="py-24 bg-[#0F172A] relative overflow-hidden"
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        variants={staggerContainer}
-      >
+      <section className="py-24 bg-[#0F172A] relative overflow-hidden">
          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#E61C5D]/10 blur-[100px] rounded-full translate-x-1/3 -translate-y-1/2 pointer-events-none"></div>
          <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-600/10 blur-[80px] rounded-full -translate-x-1/3 translate-y-1/3 pointer-events-none"></div>
          
          <div className="container mx-auto px-6 relative z-10 text-center max-w-2xl mx-auto">
-            <motion.div
-              variants={slideUpVariants}
-            >
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-6 tracking-tight">
-                  Ready to save on fees?
-              </h2>
-              <p className="text-slate-400 text-lg mb-10 leading-relaxed">
-                  Join thousands of users who trust Priyo Pay for their international banking needs.
-              </p>
-              <div className="flex flex-col sm:flex-row justify-center gap-4">
-                  <motion.a
-                    href="https://pay.priyo.com"
-                    variants={slideUpVariants}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="inline-flex items-center justify-center gap-2 bg-[#E61C5D] text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-[#c9154e] hover:shadow-lg hover:shadow-[#E61C5D]/25 transition-all duration-300"
-                  >
-                      Get Started FREE
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
-                  </motion.a>
-                  <motion.a
-                    href="/contact"
-                    variants={slideUpVariants}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="inline-flex items-center justify-center gap-2 bg-white/5 text-white border border-white/10 px-8 py-4 rounded-2xl font-bold text-lg hover:bg-white/10 transition-all duration-300"
-                  >
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-6 tracking-tight">
+                Ready to save on fees?
+            </h2>
+            <p className="text-slate-400 text-lg mb-10 leading-relaxed">
+                Join thousands of users who trust Priyo Pay for their international banking needs.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+                <Link href="https://pay.priyo.com" className="inline-flex items-center justify-center gap-2 bg-[#E61C5D] text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-[#c9154e] hover:shadow-lg hover:shadow-[#E61C5D]/25 transition-all duration-300">
+                    Get Started FREE
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                </Link>
+                <Link href="/contact" className="inline-flex items-center justify-center gap-2 bg-white/5 text-white border border-white/10 px-8 py-4 rounded-2xl font-bold text-lg hover:bg-white/10 transition-all duration-300">
                     Contact Sales
                 </Link>
             </div>
