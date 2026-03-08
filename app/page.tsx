@@ -168,28 +168,31 @@ export default function FeesPage() {
         </div>
       </header>
 
-      {/* --- HERO: Quick Summary --- */}
-      <section className="relative pt-20 pb-16">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full overflow-hidden -z-10 pointer-events-none">
-          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#E61C5D]/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/4"></div>
+      {/* --- HERO SECTION --- */}
+      <section className="relative overflow-hidden bg-white">
+        <div className="absolute right-4 md:right-12 lg:right-20 top-1/2 transform -translate-y-1/2 opacity-30 md:opacity-60 lg:opacity-100">
+          <img src="/hero_image.png" alt="Fees Hero" className="h-[250px] md:h-[400px] lg:h-[500px] 2xl:h-[600px] w-auto object-cover" />
         </div>
-
-        <div className="container mx-auto px-6 max-w-5xl text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-200 shadow-sm text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-6">
-             <span className="w-1.5 h-1.5 rounded-full bg-[#E61C5D]"></span>
-             Transparent Pricing
+        <div className="relative z-10 w-full py-12 md:py-16 lg:py-20 lg:px-0 px-8">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#E61C5D]/5 blur-[100px] rounded-full translate-x-1/3 -translate-y-1/2 pointer-events-none"></div>
+            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-slate-100/50 blur-[80px] rounded-full -translate-x-1/3 translate-y-1/3 pointer-events-none"></div>
           </div>
-          
-          <h1 className="text-4xl md:text-6xl font-extrabold text-slate-900 mb-6 tracking-tight leading-[1.1]">
-            Simple Fees. <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#E61C5D] to-[#FF6A00]">
-              No Hidden Charges.
-            </span>
-          </h1>
-          
-          <p className="text-lg text-slate-500 mb-12 max-w-2xl mx-auto leading-relaxed">
-            We believe in complete transparency. Here is exactly what you pay, and what you don't.
-          </p>
+          <div className="mx-auto flex flex-col gap-4 relative z-10 max-w-5xl 2xl:max-w-[1500px]">
+            <div className="text-lg md:text-xl lg:text-2xl 2xl:text-3xl text-slate-600 tracking-tight">No Hidden Charges</div>
+            <h1 className="text-5xl lg:text-6xl 2xl:text-8xl max-w-4xl font-extrabold text-slate-900 tracking-tight">Fees</h1>
+            <div className="text-base md:text-lg lg:text-xl 2xl:text-2xl mb-6 md:mb-8 2xl:max-w-2xl lg:max-w-xl max-w-sm leading-relaxed text-slate-600 mt-2 md:mt-4">
+              Explore a clear breakdown of Priyo Pay fees for cards, accounts, and international transfers. Designed to help you manage costs and make informed financial decisions.
+              <br /><br />
+              Account subscription fees and fees for additional USD accounts and virtual cards (for both personal and business accounts) are billed six months in advance.
+            </div>
+            <a target="_blank" href="https://pay.priyo.com" className="inline-flex items-center gap-2 bg-[#E61C5D] text-white px-6 py-3 rounded-xl font-semibold text-base hover:bg-[#c9154e] hover:shadow-lg hover:shadow-[#E61C5D]/25 transition-all duration-300 w-fit">
+              Open Account
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </a>
+          </div>
         </div>
       </section>
 
@@ -785,29 +788,95 @@ export default function FeesPage() {
   </div>
 </section>
 
-      {/* --- FOOTER CTA --- */}
-      <section className="py-24 bg-[#0F172A] relative overflow-hidden">
-         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#E61C5D]/10 blur-[100px] rounded-full translate-x-1/3 -translate-y-1/2 pointer-events-none"></div>
-         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-600/10 blur-[80px] rounded-full -translate-x-1/3 translate-y-1/3 pointer-events-none"></div>
-         
-         <div className="container mx-auto px-6 relative z-10 text-center max-w-2xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-6 tracking-tight">
-                Ready to save on fees?
-            </h2>
-            <p className="text-slate-400 text-lg mb-10 leading-relaxed">
-                Join thousands of users who trust Priyo Pay for their international banking needs.
-            </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <Link href="https://pay.priyo.com" className="inline-flex items-center justify-center gap-2 bg-[#E61C5D] text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-[#c9154e] hover:shadow-lg hover:shadow-[#E61C5D]/25 transition-all duration-300">
-                    Get Started FREE
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
-                </Link>
-                <Link href="/contact" className="inline-flex items-center justify-center gap-2 bg-white/5 text-white border border-white/10 px-8 py-4 rounded-2xl font-bold text-lg hover:bg-white/10 transition-all duration-300">
-                    Contact Sales
-                </Link>
+      {/* --- FOOTER --- */}
+      <footer className="bg-gray-50 text-gray-900 border-t border-gray-200">
+        <div className="mx-auto w-[90vw] px-0 py-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+            <div className="lg:col-span-1">
+              <div className="mb-6">
+                <img alt="Priyo Logo" loading="lazy" width="150" height="150" decoding="async" className="w-auto h-8" style={{color: 'transparent'}} src="/priyo-logo.png" />
+              </div>
+              <p className="text-gray-600 text-sm leading-relaxed mb-6">
+                Empowering global financial solutions with innovative cross-border payments, student services, and business solutions.
+              </p>
+              <div className="flex space-x-4 mb-6">
+                <a href="https://facebook.com/priyolife" className="text-blue-600 transition-colors" aria-label="Facebook">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"></path>
+                  </svg>
+                </a>
+                <a href="https://linkedin.com/company/priyo" className="text-blue-600 transition-colors" aria-label="LinkedIn">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"></path>
+                  </svg>
+                </a>
+                <a href="https://youtube.com/priyolife" className="text-red-600 transition-colors" aria-label="YouTube">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"></path>
+                  </svg>
+                </a>
+              </div>
+              <div className="space-y-4 flex flex-row gap-4">
+                <a href="https://play.google.com/store/apps/details?id=com.priyo.pay&hl=en" target="_blank" rel="noopener noreferrer" className="block hover:opacity-80 transition-opacity">
+                  <img src="/playstore.webp" alt="Get it on Google Play" className="h-8 w-auto max-w-[180px] object-contain" />
+                </a>
+                <a href="https://apps.apple.com/us/app/priyo-pay/id6538727748" target="_blank" rel="noopener noreferrer" className="block hover:opacity-80 transition-opacity">
+                  <img src="/appstore.png" alt="Download on the App Store" className="h-8 w-auto max-w-[180px] object-contain" />
+                </a>
+              </div>
             </div>
-         </div>
-      </section>
+            <div>
+              <h3 className="text-gray-900 font-semibold text-lg mb-6">Our Services</h3>
+              <ul className="space-y-3">
+                <li><a href="/personal" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">Personal</a></li>
+                <li><a href="/business" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">Business</a></li>
+                <li><a href="/card" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">Card</a></li>
+                <li><a href="#education" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">Education</a></li>
+                <li><a href="/ads" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">Advertising</a></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-gray-900 font-semibold text-lg mb-6">Company</h3>
+              <ul className="space-y-3">
+                <li><a href="#about" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">About Us</a></li>
+                <li><a href="https://jobs.priyo.com" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">Careers</a></li>
+                <li><a href="https://news.priyo.com" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">News & Updates</a></li>
+                <li><a href="#press" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">Press Kit</a></li>
+                <li><a href="/contact" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">Contact Us</a></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-gray-900 font-semibold text-lg mb-6">Legal</h3>
+              <ul className="space-y-3">
+                <li><a href="/disclosures" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">Disclosures</a></li>
+                <li><a href="/terms" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">Terms of Service</a></li>
+                <li><a href="/privacy" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">Privacy Policy</a></li>
+                <li><a href="/fees" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">Fees & Charges</a></li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-gray-200 pt-8 mb-8">
+            <div className="space-y-4 text-xs text-gray-500 leading-relaxed">
+              <p>Priyo Payments LLC, a subsidiary of Priyo Inc., is a service provider of Regent Bank USA for Priyo Card and Checking Accounts. Neither Priyo Inc. nor Priyo Payments LLC is a bank.</p>
+              <p>Banking services are provided by Regent Bank, Member FDIC. FDIC insurance only covers failure of insured depository institutions. Certain conditions must be satisfied for pass-through FDIC deposit insurance to apply.</p>
+              <p>The Priyo Mastercard® Debit Card is issued by Regent Bank pursuant to a license from Mastercard U.S.A. Inc. and may be used everywhere Mastercard debit cards are accepted. Mastercard is a registered trademark, and the circles design is a trademark of Mastercard International Incorporated.</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-gray-100 text-gray-600 text-sm">
+          <div className="border-t border-gray-300"></div>
+          <div className="max-w-7xl mx-auto px-4 py-4">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="text-gray-600">Copyright © 2026 Priyo Inc. All rights reserved.</div>
+              <div className="text-gray-600">United States</div>
+              <div className="flex items-center flex-wrap justify-start sm:gap-x-2 text-gray-600">
+                <a href="/privacy" className="hover:text-gray-800 transition-colors">Privacy Policy |</a>
+                <a href="/terms" className="hover:text-gray-800 transition-colors">Terms of Use</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
 
     </div>
   );
