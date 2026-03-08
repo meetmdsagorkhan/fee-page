@@ -2,13 +2,91 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
+
+// Import new components
+import FeeCalculator from '@/components/FeeCalculator';
+import ScrollProgress from '@/components/ScrollProgress';
+import ActiveNavbar from '@/components/ActiveNavbar';
+import PricingCards from '@/components/PricingCards';
+import MotionWrapper from '@/components/MotionWrapper';
+import { slideUpVariants, staggerContainer, fadeInVariants } from '@/components/MotionWrapper';
 
 const SUB_NAV_ITEMS = [
   { id: 'maintenance-service-fees', label: 'Maintenance & Service Fees' },
   { id: 'receive-money', label: 'Receive Money' },
-  { id: 'send-money-payments', label: 'Send Money/ Make Payments' },
+  { id: 'send-money-payments', label: 'Payments & Transfers' },
   { id: 'additional-resources', label: 'Additional Resources' },
-  { id: 'limits', label: 'Limits' },
+  { id: 'limits', label: 'Account & Usage Limits' },
+];
+
+// Scroll progress sections
+const SCROLL_SECTIONS = [
+  { id: 'hero', label: 'Home' },
+  { id: 'calculator', label: 'Calculator' },
+  { id: 'fees', label: 'Fees' },
+  { id: 'pricing', label: 'Pricing' },
+  { id: 'faq', label: 'FAQ' },
+  { id: 'contact', label: 'Contact' },
+];
+
+// Pricing plans data
+const PRICING_PLANS = [
+  {
+    id: 'personal',
+    name: 'Personal',
+    price: 'FREE',
+    period: 'No setup fees',
+    description: 'Perfect for individuals and families sending money internationally.',
+    features: [
+      'Up to 2 USD accounts',
+      'Up to 2 virtual cards',
+      '1 physical card',
+      '$1,000 daily transaction limit',
+      'No monthly maintenance fee',
+      '24/7 customer support'
+    ],
+    cta: 'Get Started Free',
+    ctaLink: 'https://pay.priyo.com'
+  },
+  {
+    id: 'business',
+    name: 'Business',
+    price: '$0',
+    period: 'No monthly fees',
+    description: 'Ideal for businesses and entrepreneurs managing international payments.',
+    features: [
+      'Up to 2 USD accounts',
+      'Up to 20 virtual cards',
+      '1 physical card per account',
+      '$10,000 daily transaction limit',
+      'FREE maintenance forever',
+      'Priority business support',
+      'Team management tools'
+    ],
+    highlighted: true,
+    cta: 'Start Business Account',
+    ctaLink: 'https://pay.priyo.com/business'
+  },
+  {
+    id: 'enterprise',
+    name: 'Enterprise',
+    price: 'Custom',
+    period: 'Tailored pricing',
+    description: 'Advanced solutions for large organizations with high-volume needs.',
+    features: [
+      'Unlimited USD accounts',
+      'Unlimited virtual cards',
+      'Multiple physical cards',
+      'Custom transaction limits',
+      'Dedicated account manager',
+      'API access & integrations',
+      'Advanced reporting & analytics',
+      'Custom compliance solutions'
+    ],
+    cta: 'Contact Sales',
+    ctaLink: '/contact'
+  }
 ];
 
 // ----------------------------------------------------------------------
@@ -41,7 +119,7 @@ const FeeRow = ({ label, desc, price, period, isHighlight = false }: any) => (
     </div>
     
     <div className="text-left sm:text-right shrink-0">
-      <div className={`text-base font-bold ${price === 'FREE' || price === '$0.00' ? 'text-emerald-500' : 'text-slate-900'}`}>
+      <div className={`text-base font-bold ${price === 'FREE' || price === '$0.00' ? 'text-[#E61C5D]' : 'text-slate-900'}`}>
         {price}
       </div>
       {period && <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mt-0.5">{period}</div>}
@@ -154,31 +232,160 @@ export default function FeesPage() {
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-[#E61C5D] selection:text-white">
       
-      {/* --- HEADER --- */}
-      <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-             <span className="text-xl font-extrabold text-slate-900 tracking-tight">Priyo Pay</span>
-          </Link>
-          <div className="flex items-center gap-4">
-            <Link href="https://pay.priyo.com" className="bg-slate-900 text-white px-5 py-2 rounded-xl font-semibold text-sm hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/10">
-                Open Account
-            </Link>
-          </div>
-        </div>
-      </header>
+      {/* Active Navigation */}
+      <ActiveNavbar items={SCROLL_SECTIONS} />
 
-      {/* --- HERO: Quick Summary --- */}
-      <section className="relative pt-20 pb-16">
+      {/* Scroll Progress Indicator */}
+      <ScrollProgress sections={SCROLL_SECTIONS} />
+
+      {/* --- HERO SECTION --- */}
+      <motion.section 
+        id="hero"
+        className="relative py-24 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white overflow-hidden"
+        initial="hidden"
+        animate="visible"
+        variants={staggerContainer}
+      >
+        {/* Background Effects */}
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#E61C5D]/10 blur-[100px] rounded-full translate-x-1/3 -translate-y-1/2 pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-600/10 blur-[80px] rounded-full -translate-x-1/3 translate-y-1/3 pointer-events-none"></div>
+        
+        <div className="container mx-auto px-6 relative z-10 text-center max-w-4xl">
+          <motion.div
+            variants={slideUpVariants}
+            className="mb-8"
+          >
+            <Badge color="pink">Transparent Pricing</Badge>
+          </motion.div>
+          
+          <motion.h1 
+            variants={slideUpVariants}
+            className="text-5xl md:text-6xl font-bold mb-6 tracking-tight"
+          >
+            International Banking
+            <span className="block text-[#E61C5D]">Made Simple</span>
+          </motion.h1>
+          
+          <motion.p 
+            variants={slideUpVariants}
+            className="text-xl text-slate-300 mb-10 leading-relaxed max-w-2xl mx-auto"
+          >
+            Send money globally, manage multi-currency accounts, and enjoy transparent fees with Priyo Pay. 
+            No hidden charges, just straightforward banking.
+          </motion.p>
+          
+          <motion.div 
+            variants={slideUpVariants}
+            className="flex flex-col sm:flex-row justify-center gap-4"
+          >
+            <motion.a
+              href="https://pay.priyo.com"
+              variants={slideUpVariants}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="inline-flex items-center justify-center gap-2 bg-[#E61C5D] text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-[#c9154e] hover:shadow-lg hover:shadow-[#E61C5D]/25 transition-all duration-300"
+            >
+              Get Started FREE
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </motion.a>
+            
+            <motion.a
+              href="#calculator"
+              variants={slideUpVariants}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="inline-flex items-center justify-center gap-2 bg-white/10 text-white border border-white/20 px-8 py-4 rounded-2xl font-bold text-lg hover:bg-white/20 transition-all duration-300 backdrop-blur-sm"
+            >
+              Calculate Fees
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+            </motion.a>
+          </motion.div>
+        </div>
+      </motion.section>
+
+      {/* --- FEE CALCULATOR SECTION --- */}
+      <motion.section 
+        id="calculator"
+        className="py-20 bg-white"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        variants={staggerContainer}
+      >
+        <div className="container mx-auto px-6">
+          <motion.div
+            variants={slideUpVariants}
+            className="text-center mb-12"
+          >
+            <h2 className="text-4xl font-bold text-slate-900 mb-4">
+              Calculate Your <span className="text-[#E61C5D]">Education Costs</span>
+            </h2>
+            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+              Get instant estimates for tuition, living expenses, and total costs for studying abroad.
+            </p>
+          </motion.div>
+          
+          <FeeCalculator />
+        </div>
+      </motion.section>
+      {/* --- PRICING SECTION --- */}
+      <motion.section 
+        id="pricing"
+        className="py-20 bg-slate-50"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        variants={staggerContainer}
+      >
+        <div className="container mx-auto px-6">
+          <motion.div
+            variants={slideUpVariants}
+            className="text-center mb-16"
+          >
+            <Badge color="pink" className="mb-4">Choose Your Plan</Badge>
+            <h2 className="text-4xl font-bold text-slate-900 mb-4">
+              Simple, Transparent <span className="text-[#E61C5D]">Pricing</span>
+            </h2>
+            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+              Whether you're an individual or a business, we have the perfect plan for your international banking needs.
+            </p>
+          </motion.div>
+          
+          <PricingCards plans={PRICING_PLANS} />
+        </div>
+      </motion.section>
+
+      {/* --- FEES SECTION --- */}
+      <motion.section 
+        id="fees"
+        className="relative pt-20 pb-16 bg-white"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        variants={staggerContainer}
+      >
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full overflow-hidden -z-10 pointer-events-none">
           <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#E61C5D]/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/4"></div>
         </div>
 
         <div className="container mx-auto px-6 max-w-5xl text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-200 shadow-sm text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-6">
-             <span className="w-1.5 h-1.5 rounded-full bg-[#E61C5D]"></span>
-             Transparent Pricing
-          </div>
+          <motion.div
+            variants={slideUpVariants}
+            className="mb-12"
+          >
+            <Badge color="pink" className="mb-4">Detailed Fee Structure</Badge>
+            <h2 className="text-4xl font-bold text-slate-900 mb-4">
+              Complete <span className="text-[#E61C5D]">Fee Breakdown</span>
+            </h2>
+            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+              Transparent pricing with no hidden fees. See exactly what you pay for every service.
+            </p>
+          </motion.div>
+        </div>
           
           <h1 className="text-4xl md:text-6xl font-extrabold text-slate-900 mb-6 tracking-tight leading-[1.1]">
             Simple Fees. <br />
@@ -215,36 +422,32 @@ export default function FeesPage() {
             <AccountTypeSection>
               <FeeSubsection title="Maintenance & Service Fees" id="personal-maintenance-service-fees">
                 <FeeRow 
-                  label="Maintenance Fee (Personal 1 USD & 1 BDT Account) - Every 6 months" 
-                  desc="$10 / FREE If you bring $5,000 / year" 
+                  label="Maintenance Fee (1 USD, 1 Virtual Card & 1 BDT Account)" 
+                  desc={<> <span className="text-[#E61C5D] font-bold">FREE</span> If you bring $5,000 / year <a href="https://pay.priyo.com/fee-waiver" target="_blank" rel="noopener noreferrer" className="text-[#E61C5D] hover:text-[#c9154e] underline font-bold">Learn more</a>. </>} 
                   price="$10" 
                   period="Every 6 months"
                 />
                 <FeeRow 
-                  label="Business USD Accounts (up to 2 USD Accounts)" 
-                  price="FREE" 
-                />
-                <FeeRow 
-                  label="Maintenance Fee (BDT Account Only) - Yearly" 
-                  desc="Payable in every 12 months. FREE For USD Account Holder." 
+                  label="Maintenance Fee (BDT Account Only)" 
+                  desc={<>Payable in every 12 months. <span className='text-[#E61C5D] font-bold'>FREE</span> for USD Account Holder.</>} 
                   price="৳199.00" 
                   period="Yearly"
                 />
                 <FeeRow 
-                  label="Priyo Virtual Card (Debit) - One-time" 
-                  desc="The first virtual debit card for your personal account is free. Any additional cards incur a fee" 
+                  label="Virtual Card (Debit)" 
+                  desc={<>The first virtual debit card for your personal account is <span className='text-[#E61C5D] font-bold'>FREE</span>. Any additional cards incur a fee.</>} 
                   price="$3.00" 
                   period="One-time"
                 />
                 <FeeRow 
-                  label="Priyo Physical Card (Plastic) - Yearly" 
-                  desc="You can order Physical Mastercard from your account. This is yearly fee for a single card. Shipping Charge is separate." 
+                  label="Physical Card (Plastic)" 
+                  desc="You can order Physical Mastercard from your account. This is a yearly fee for a single card. Shipping charge is separate." 
                   price="$19.95" 
                   period="Yearly"
                 />
                 <FeeRow 
                   label="Physical Card Shipping (Standard)" 
-                  desc="Regular Shipping takes 3-5 business days in the USA, and 3-6 weeks globally. If you want FedEx, then the Fee is $40" 
+                  desc="Regular shipping takes 3-5 business days in the USA, and 3-6 weeks globally. If you want FedEx, then the fee is $40." 
                   price="$5.00" 
                   period="Per shipment"
                 />
@@ -252,19 +455,19 @@ export default function FeesPage() {
 
               <FeeSubsection title="Receive Money" id="personal-receive-money">
                 <FeeRow 
-                  label="From another Priyo Pay Customer (P2P)" 
-                  desc="You can receive money from another Priyo Pay user" 
-                  price="$0.00" 
+                  label="From another Priyo Pay user (P2P)" 
+                  desc="You can receive money from another Priyo Pay user." 
+                  price="FREE" 
                 />
                 <FeeRow 
                   label="Incoming ACH - from Any Bank in the USA" 
-                  desc="First 10 transactions are free every month" 
+                  desc={<>First 10 transactions are <span className='text-[#E61C5D] font-bold'>FREE</span> every month.</>} 
                   price="$0.25" 
                   period="Per transaction"
                 />
                 <FeeRow 
                   label="Incoming Wire (Domestic)" 
-                  desc="Receiving Wire from any Bank in the USA" 
+                  desc="Receiving Wire from any Bank in the USA." 
                   price="$10.00" 
                   period="Per transaction"
                 />
@@ -282,45 +485,45 @@ export default function FeesPage() {
                 />
               </FeeSubsection>
 
-              <FeeSubsection title="Send Money/ Make Payments" id="personal-send-money-payments">
+              <FeeSubsection title="Payments & Transfers" id="personal-send-money-payments">
                 <FeeRow 
                   label="Payment (via Card) - to Third-Party Money Transmitters" 
-                  desc="2% of total transaction amount on payment via Card to third-party money transmitters such as Western Union, Remitly, MoneyGram, Taptap Send, PayPal, and similar platforms. Minimum Fee $1.00." 
+                  desc="Payment via Card to third-party money transmitters such as Western Union, Remitly, MoneyGram, Taptap Send, PayPal, and similar platforms. Minimum Fee $1.00." 
                   price="2.00%" 
                   period="Per transaction"
                 />
                 <FeeRow 
                   label="Cross Border Payment (via Card) - outside of USA" 
-                  desc="1% of total transaction amount on payment via Card outside of the USA. No Minimum Fee." 
+                  desc="Payment via Card outside of the USA. No Minimum Fee." 
                   price="1.00%" 
                   period="Per transaction"
                 />
                 <FeeRow 
                   label="Outgoing ACH (USA Only)" 
-                  desc="Any Bank in the USA" 
+                  desc="Any Bank in the USA." 
                   price="1.00%" 
                   period="Per transaction"
                 />
                 <FeeRow 
                   label="Outgoing Domestic Wire" 
-                  desc="Sending Wire to any Bank in the USA" 
-                  price="$10.00 + 1% of transfer amount" 
+                  desc="Sending Wire to any Bank in the USA." 
+                  price="$10.00 + 1%" 
                   period="Per transaction"
                 />
                 <FeeRow 
-                  label="Payment to another Priyo User (P2P)" 
-                  desc="1% of the transaction amount. Minimum Fee: $1.00. Maximum $1,000.00." 
+                  label="Payment to another Priyo Pay user (P2P)" 
+                  desc="Minimum Fee: $1.00. Maximum $1,000.00." 
                   price="1.00%" 
                   period="Per transaction"
                 />
                 <FeeRow 
-                  label="Transfer from USD to BDT" 
+                  label="Transfer/Convert from USD to BDT" 
                   desc="Minimum Fee $0.99. The transaction fee is also displayed during the transaction." 
                   price="1.00%" 
                   period="Per transaction"
                 />
                 <FeeRow 
-                  label="ATM Withdraw (Globally)" 
+                  label="ATM Withdrawal (Globally)" 
                   desc="Minimum fee $3.00." 
                   price="1.00%" 
                   period="Per transaction"
@@ -329,34 +532,76 @@ export default function FeesPage() {
 
               <FeeSubsection title="Additional Resources" id="personal-additional-resources">
                 <FeeRow 
-                  label="Personal USD Accounts" 
+                  label="Additionl USD Accounts"
+                  desc="Charged per additional account."  
                   price="$10.00" 
                   period="Every 6 months"
                 />
                 <FeeRow 
-                  label="Business USD Accounts (up to 2 USD Accounts)" 
-                  price="FREE" 
-                />
-                <FeeRow 
-                  label="Virtual Card for Personal Accounts" 
+                  label="Additional Virtual Cards" 
+                  desc="Charged per additional card." 
                   price="$3.00" 
-                  period="One-time per card"
+                  period="One-time"
+                />
+              </FeeSubsection>
+
+              <FeeSubsection title="Account & Usage Limits" id="personal-limits">
+                <div className="border-b border-slate-200 pb-2 mb-4">
+                  <h5 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Resource Limits</h5>
+                </div>
+                
+                <FeeRow 
+                  label="USD Account" 
+                  desc="Maximum number of active USD accounts per profile." 
+                  price="2" 
+                  period="Accounts"
                 />
                 <FeeRow 
-                  label="Virtual Card for Business Accounts (up to 20 Virtual Cards)" 
-                  price="FREE" 
+                  label="Virtual Card" 
+                  desc="Maximum number of non-terminated virtual cards per USD account." 
+                  price="2" 
+                  period="Cards"
                 />
                 <FeeRow 
-                  label="Personal and Business Physical Card" 
-                  desc="For the first year including shipping charge" 
-                  price="$25.00" 
-                  period="First year"
+                  label="Physical Card" 
+                  desc="Maximum number of physical cards per USD account." 
+                  price="1" 
+                  period="Card"
+                />
+                
+                <div className="border-b border-slate-200 pb-2 mb-4 mt-6">
+                  <h5 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Transaction Limits</h5>
+                </div>
+                
+                <FeeRow 
+                  label="General Transaction - Withdraw/Transfer (< 30 days)" 
+                  desc="Maximum transaction amount for withdrawals/transfers in past 24 hours, when account is less than 30 days old." 
+                  price="$1,000" 
+                  period="Per 24 hours"
                 />
                 <FeeRow 
-                  label="Personal and Business Physical Card" 
-                  desc="From 2nd year and onwards" 
-                  price="$19.95" 
-                  period="Per year"
+                  label="General Transaction - Withdraw/Transfer (30+ days)" 
+                  desc="Maximum transaction amount for withdrawals/transfers in past 24 hours, when account is 30 days or older." 
+                  price="$4,000" 
+                  period="Per 24 hours"
+                />
+                <FeeRow 
+                  label="Card Transaction (< 30 days)" 
+                  desc="Maximum transaction amount and count for card transactions in past 24 hours, when account is less than 30 days old." 
+                  price="$1,000" 
+                  period="Max 10 transactions"
+                />
+                <FeeRow 
+                  label="Card Transaction (30+ days)" 
+                  desc="Maximum transaction amount and count for card transactions in past 24 hours, when account is 30 days or older." 
+                  price="$3,000" 
+                  period="Max 30 transactions"
+                />
+                <FeeRow 
+                  label="Withdraw to MFS (Bkash)" 
+                  desc="Maximum transaction amount for withdrawals to Mobile Financial Services." 
+                  price="$500" 
+                  period="Per 24 hours"
                 />
               </FeeSubsection>
             </AccountTypeSection>
@@ -367,118 +612,182 @@ export default function FeesPage() {
             <AccountTypeSection>
               <FeeSubsection title="Maintenance & Service Fees" id="business-maintenance-service-fees">
                 <FeeRow 
-                  label="USD Account Subscription" 
-                  desc="Access to US Bank Account features. Billed every 6 months." 
-                  price="$25.00" 
-                  period="Per 6 Months"
-                />
-                <FeeRow 
-                  label="Monthly Maintenance" 
-                  desc="Waived if you transfer $10,000+ to Bangladesh annually." 
+                  label="Maintenance Fee" 
+                  desc={<>Zero monthly fee. <span className='text-[#E61C5D] font-bold'>FREE</span> forever.</>}
                   price="FREE" 
-                  period="Condition Apply" 
+                  period="Upto 2 USD Accounts"
+                  
+                />
+                
+                <FeeRow 
+                  label="Virtual Card (Debit)" 
+                  desc={<>Zero monthly fee. <span className='text-[#E61C5D] font-bold'>FREE</span> forever.</>}
+                  price="FREE" 
+                  period="Upto 20 Cards"
                 />
                 <FeeRow 
-                  label="API Access" 
-                  desc="Programmatic access to payment features." 
-                  price="$50.00" 
-                  period="Per Month" 
+                  label="Physical Card (Plastic)" 
+                  desc="You can order Physical Mastercard from your account. This is a yearly fee for a single card. Shipping charge is separate." 
+                  price="$19.95" 
+                  period="Yearly"
+                />
+                <FeeRow 
+                  label="Physical Card Shipping (Standard)" 
+                  desc="Regular shipping takes 3-5 business days in the USA, and 3-6 weeks globally. If you want FedEx, then the fee is $40." 
+                  price="$5.00" 
+                  period="Per shipment"
                 />
               </FeeSubsection>
 
               <FeeSubsection title="Receive Money" id="business-receive-money">
                 <FeeRow 
-                  label="Receive Money (P2P)" 
-                  desc="From another Priyo Pay user." 
+                  label="From another Priyo Pay user (P2P)" 
+                  desc="You can receive money from another Priyo Pay user. Business to Business only." 
                   price="FREE" 
                 />
                 <FeeRow 
-                  label="Receive from US Bank (ACH)" 
-                  desc="Direct deposit. First 20 transactions/month are free." 
-                  price="$0.10" 
-                  period="Per Transaction" 
+                  label="Incoming ACH - from Any Bank in the USA" 
+                  desc={<>First 10 transactions are <span className='text-[#E61C5D] font-bold'>FREE</span> every month.</>} 
+                  price="$0.25" 
+                  period="Per transaction"
                 />
                 <FeeRow 
-                  label="Receive Wire (Domestic)" 
-                  desc="Same-day wire from US banks." 
+                  label="Incoming Wire (Domestic)" 
+                  desc="Receiving Wire from any Bank in the USA." 
                   price="$10.00" 
-                  period="Per Transaction" 
+                  period="Per transaction"
                 />
                 <FeeRow 
-                  label="Batch Payments Processing" 
-                  desc="Process multiple payments at once." 
-                  price="0.50%" 
-                  period="Per Transaction" 
+                  label="Incoming Wire - International (SWIFT)" 
+                  desc="Receiving Wire from anywhere in the world via SWIFT." 
+                  price="$25.00" 
+                  period="Per transaction"
+                />
+                <FeeRow 
+                  label="Incoming Credit (via Card) - from any Source" 
+                  desc="Minimum Fee $1.00." 
+                  price="2.00%" 
+                  period="Per transaction"
                 />
               </FeeSubsection>
 
-              <FeeSubsection title="Send Money/ Make Payments" id="business-send-money-payments">
+              <FeeSubsection title="Payments & Transfers" id="business-send-money-payments">
                 <FeeRow 
-                  label="Send to US Bank (ACH)" 
-                  desc="Standard transfer to any US bank." 
-                  price="0.80%" 
-                  period="No Min Fee" 
+                  label="Payment (via Card) - to Third-Party Money Transmitters" 
+                  desc="Payment via Card to third-party money transmitters such as Western Union, Remitly, MoneyGram, Taptap Send, PayPal, and similar platforms. Minimum Fee $1.00." 
+                  price="2.00%" 
+                  period="Per transaction"
                 />
                 <FeeRow 
-                  label="Send Wire (Domestic)" 
-                  desc="Urgent transfer to US bank." 
-                  price="$8 + 0.8%" 
-                  period="Per Transaction" 
-                />
-                <FeeRow 
-                  label="International Card Spend" 
-                  desc="Spending outside the USA." 
-                  price="0.80%" 
-                  period="No Min Fee" 
-                />
-                <FeeRow 
-                  label="Payroll Processing" 
-                  desc="Bulk employee payments." 
+                  label="Cross Border Payment (via Card) - outside of USA" 
+                  desc="Payment via Card outside of the USA. No Minimum Fee." 
                   price="1.00%" 
-                  period="Per Transaction" 
+                  period="Per transaction"
+                />
+                <FeeRow 
+                  label="Outgoing ACH (USA Only)" 
+                  desc="Any Bank in the USA." 
+                  price="1.00%" 
+                  period="Per transaction"
+                />
+                <FeeRow 
+                  label="Outgoing Domestic Wire" 
+                  desc="Sending Wire to any Bank in the USA." 
+                  price="$10.00 + 1%" 
+                  period="Per transaction"
+                />
+                <FeeRow 
+                  label="Payment to another Priyo Pay user (P2P)" 
+                  desc="Minimum Fee: $1.00. Maximum $1,000.00. Business to Business only" 
+                  price="1.00%" 
+                  period="Per transaction"
+                />
+                <FeeRow 
+                  label="Transfer/Convert from USD to BDT" 
+                  desc="Minimum Fee $0.99. The transaction fee is also displayed during the transaction." 
+                  price="1.00%" 
+                  period="Per transaction"
+                />
+                <FeeRow 
+                  label="ATM Withdrawal (Globally)" 
+                  desc="Minimum fee $3.00." 
+                  price="1.00%" 
+                  period="Per transaction"
                 />
               </FeeSubsection>
 
               <FeeSubsection title="Additional Resources" id="business-additional-resources">
                 <FeeRow 
-                  label="Virtual Debit Card" 
-                  desc="Instant issuance for online shopping. First 2 cards free." 
-                  price="FREE" 
-                  period="First 2 Cards" 
-                  isHighlight={true}
+                  label="Additionl USD Accounts"
+                  desc={<>Charged per additional account. First 2 accounts are <span className='text-[#E61C5D] font-bold'>FREE</span>.</>}
+                  price="$10.00" 
+                  period="Every 6 months"
                 />
                 <FeeRow 
-                  label="Additional Virtual Card" 
-                  desc="Extra virtual cards for team members." 
-                  price="$2.50" 
-                  period="One-time" 
-                />
-                <FeeRow 
-                  label="Physical Mastercard" 
-                  desc="Plastic card mailed to your address. Shipping charged separately." 
-                  price="$15.00" 
-                  period="Per Year" 
-                />
-                <FeeRow 
-                  label="Corporate Cards" 
-                  desc="Managed cards for employees with spending limits." 
-                  price="$25.00" 
-                  period="Per Card/Year" 
+                  label="Additional Virtual Cards" 
+                  desc={<>Charged per additional cards. First 20 cards are <span className='text-[#E61C5D] font-bold'>FREE</span>.</>}
+                  price="$3.00" 
+                  period="One-time"
                 />
               </FeeSubsection>
 
-              <FeeSubsection title="Limits" id="business-limits">
+              <FeeSubsection title="Account & Usage Limits" id="business-limits">
+                <div className="border-b border-slate-200 pb-2 mb-4">
+                  <h5 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Resource Account & Usage Limits</h5>
+                </div>
+                
                 <FeeRow 
-                  label="Standard Shipping" 
-                  desc="Global delivery (3-6 weeks)." 
-                  price="FREE" 
-                  period="First Order" 
+                  label="USD Account" 
+                  desc="Maximum number of active USD accounts per business." 
+                  price="2" 
+                  period="Accounts"
                 />
                 <FeeRow 
-                  label="Express Shipping (FedEx)" 
-                  desc="Fast tracked delivery." 
-                  price="$35.00" 
-                  period="Per Delivery" 
+                  label="Virtual Card" 
+                  desc="Maximum number of virtual cards per USD account." 
+                  price="20" 
+                  period="Cards"
+                />
+                <FeeRow 
+                  label="Physical Card" 
+                  desc="Maximum number of physical cards per USD account." 
+                  price="1" 
+                  period="Card"
+                />
+                
+                <div className="border-b border-slate-200 pb-2 mb-4 mt-6">
+                  <h5 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Transaction Limits</h5>
+                </div>
+                
+                <FeeRow 
+                  label="General Transaction - Withdraw/Transfer (< 30 days)" 
+                  desc="Maximum transaction amount for withdrawals/transfers in past 24 hours, when account is less than 30 days old." 
+                  price="$5,000" 
+                  period="Per 24 hours"
+                />
+                <FeeRow 
+                  label="General Transaction - Withdraw/Transfer (30+ days)" 
+                  desc="Maximum transaction amount for withdrawals/transfers in past 24 hours, when account is 30 days or older." 
+                  price="$10,000" 
+                  period="Per 24 hours"
+                />
+                <FeeRow 
+                  label="Card Transaction (< 30 days)" 
+                  desc="Maximum transaction amount and count for card transactions in past 24 hours, when account is less than 30 days old." 
+                  price="$5,000" 
+                  period="Max 20 transactions"
+                />
+                <FeeRow 
+                  label="Card Transaction (30+ days)" 
+                  desc="Maximum transaction amount and count for card transactions in past 24 hours, when account is 30 days or older." 
+                  price="$10,000" 
+                  period="Max 30 transactions"
+                />
+                <FeeRow 
+                  label="Withdraw to MFS (Bkash)" 
+                  desc="Maximum transaction amount for withdrawals to Mobile Financial Services." 
+                  price="$500" 
+                  period="Per 24 hours"
                 />
               </FeeSubsection>
             </AccountTypeSection>
@@ -487,72 +796,254 @@ export default function FeesPage() {
         </div>
       </section>
 
-      {/* --- FAQ SECTION (Reused Style from your Repo) --- */}
-      <section className="py-24 bg-white border-t border-slate-100">
+      {/* --- FAQ SECTION --- */}
+      <motion.section 
+        id="faq"
+        className="py-24 bg-white border-t border-slate-100"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        variants={staggerContainer}
+      >
         <div className="container mx-auto px-6 max-w-3xl">
-          <div className="text-center mb-12">
+          <motion.div
+            variants={slideUpVariants}
+            className="text-center mb-12"
+          >
+            <Badge color="pink" className="mb-4">Got Questions?</Badge>
             <h2 className="text-3xl font-bold text-slate-900 mb-4">Common Questions</h2>
-            <p className="text-slate-500">Clarifications on our fee structure.</p>
-          </div>
+            <p className="text-slate-500">Clarifications on our fee structure and account maintenance.</p>
+          </motion.div>
+    </div>
 
-          <div className="space-y-4">
-            <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-[#E61C5D]/20 transition-all duration-300">
-              <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
-                <span className="font-bold text-slate-900">How is the subscription fee billed?</span>
-                <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                </span>
-              </summary>
-              <div className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-slate-100/50 pt-4">
-                The $10 subscription fee covers your USD account maintenance for 6 months. It is automatically deducted from your balance at the start of each cycle.
-              </div>
-            </details>
-
-            <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-[#E61C5D]/20 transition-all duration-300">
-              <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
-                <span className="font-bold text-slate-900">Is the Virtual Card really free?</span>
-                <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                </span>
-              </summary>
-              <div className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-slate-100/50 pt-4">
-                For Personal accounts, your <strong>first</strong> virtual debit card is issued absolutely free. If you need additional cards later, a one-time fee of $3.00 applies per card.
-              </div>
-            </details>
-
-            <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-[#E61C5D]/20 transition-all duration-300">
-              <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
-                <span className="font-bold text-slate-900">How do I waive the monthly maintenance fee?</span>
-                <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                </span>
-              </summary>
-              <div className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-slate-100/50 pt-4">
-                The monthly maintenance fee is automatically waived if you transfer a total of $2,000 or more to Bangladesh within a year.
-              </div>
-            </details>
-          </div>
+    <div className="space-y-4">
+      
+      {/* 1. Maintenance Fee Billing */}
+      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-[#E61C5D]/20 transition-all duration-300">
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
+          <span className="font-bold text-slate-900">How is the maintenance fee billed?</span>
+          <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+          </span>
+        </summary>
+        <div className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-slate-100/50 pt-4">
+          The $10 maintenance fee covers your USD account maintenance for 6 months. It is automatically deducted from your balance at the start of each 6-month cycle.
         </div>
-      </section>
+      </details>
+
+      {/* 2. Fee Waiver */}
+      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-[#E61C5D]/20 transition-all duration-300">
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
+          <span className="font-bold text-[#E61C5D]">How can I waive the maintenance fee?</span>
+          <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+          </span>
+        </summary>
+        <div className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-slate-100/50 pt-4">
+          The maintenance fee is waived (FREE) if you bring in $5,000 or more in deposits per year. <a href="https://pay.priyo.com/fee-waiver" target="_blank" rel="noopener noreferrer" className="text-[#E61C5D] hover:text-[#c9154e] underline font-bold">Learn more</a>
+        </div>
+      </details>
+
+      {/* 3. Virtual Cards */}
+      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-[#E61C5D]/20 transition-all duration-300">
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
+          <span className="font-bold text-slate-900">Is the Virtual Card really free?</span>
+          <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+          </span>
+        </summary>
+        <div className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-slate-100/50 pt-4">
+          For personal accounts, your first virtual debit card is issued absolutely FREE. Any additional cards incur a one-time fee of $3.00 per card.
+        </div>
+      </details>
+
+      {/* 4. Incoming ACH */}
+      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-[#E61C5D]/20 transition-all duration-300">
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
+          <span className="font-bold text-slate-900">Are there fees for incoming ACH transfers?</span>
+          <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+          </span>
+        </summary>
+        <div className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-slate-100/50 pt-4">
+          We offer the first 10 incoming ACH transactions every month for FREE. After that, a fee of $0.25 applies per transaction.
+        </div>
+      </details>
+
+      {/* 5. Wires */}
+      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-[#E61C5D]/20 transition-all duration-300">
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
+          <span className="font-bold text-slate-900">What are the fees for Wire transfers?</span>
+          <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+          </span>
+        </summary>
+        <div className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-slate-100/50 pt-4">
+          Incoming domestic wires are $10.00, and international SWIFT wires are $25.00 per transaction. Outgoing domestic wires are $10.00 plus a 1% fee.
+        </div>
+      </details>
+
+      {/* 6. ATM Withdrawal */}
+      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-[#E61C5D]/20 transition-all duration-300">
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
+          <span className="font-bold text-slate-900">Are there fees for ATM withdrawals?</span>
+          <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+          </span>
+        </summary>
+        <div className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-slate-100/50 pt-4">
+          Yes, ATM withdrawals globally incur a 1% fee, with a minimum charge of $3.00.
+        </div>
+      </details>
+
+      {/* 7. Business - Maintenance Fees */}
+      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-[#E61C5D]/20 transition-all duration-300">
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
+          <span className="font-bold text-slate-900">Are there maintenance fees for Business Accounts?</span>
+          <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+          </span>
+        </summary>
+        <div className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-slate-100/50 pt-4">
+          No. Business accounts enjoy a zero monthly maintenance fee for up to 2 USD accounts. It is absolutely FREE.
+        </div>
+      </details>
+
+      {/* 8. Business - Virtual Cards */}
+      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-[#E61C5D]/20 transition-all duration-300">
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
+          <span className="font-bold text-slate-900">How many Virtual Cards can a business have?</span>
+          <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+          </span>
+        </summary>
+        <div className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-slate-100/50 pt-4">
+          Business accounts can issue up to 20 virtual cards for FREE. Any cards issued beyond this limit incur a one-time fee of $3.00 per card.
+        </div>
+      </details>
+
+      {/* 9. Business - P2P Transfers */}
+      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-[#E61C5D]/20 transition-all duration-300">
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
+          <span className="font-bold text-slate-900">Can I use P2P transfers for my business?</span>
+          <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+          </span>
+        </summary>
+        <div className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-slate-100/50 pt-4">
+          Yes. Business-to-business P2P transfers are available for 1.00% per transaction (min. $1.00; max $1,000.00). Please note that these are strictly for Business-to-Business usage.
+        </div>
+      </details>
+
+      {/* 10. Account Limits - Personal */}
+      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-[#E61C5D]/20 transition-all duration-300">
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
+          <span className="font-bold text-slate-900">How many USD accounts can I have with a Personal account?</span>
+          <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+          </span>
+        </summary>
+        <div className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-slate-100/50 pt-4">
+          With a Personal account, you can have up to 2 active USD accounts per profile. Each USD account can hold up to 2 virtual cards and 1 physical card.
+        </div>
+      </details>
+
+      {/* 11. Account Limits - Business */}
+      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-[#E61C5D]/20 transition-all duration-300">
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
+          <span className="font-bold text-slate-900">How many USD accounts can I have with a Business account?</span>
+          <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+          </span>
+        </summary>
+        <div className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-slate-100/50 pt-4">
+          With a Business account, you can have up to 2 active USD accounts per business. Each USD account can hold up to 20 virtual cards and 1 physical card, perfect for team management.
+        </div>
+      </details>
+
+      {/* 12. Transaction Limits - Personal */}
+      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-[#E61C5D]/20 transition-all duration-300">
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
+          <span className="font-bold text-slate-900">What are the transaction limits for Personal accounts?</span>
+          <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+          </span>
+        </summary>
+        <div className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-slate-100/50 pt-4">
+          For Personal accounts: General withdrawals/transfers are limited to $1,000/day for accounts under 30 days old, and $4,000/day for accounts 30+ days old. Card transactions are limited to $1,000/day (max 10 transactions) for new accounts, and $3,000/day (max 30 transactions) for established accounts.
+        </div>
+      </details>
+
+      {/* 13. Transaction Limits - Business */}
+      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-[#E61C5D]/20 transition-all duration-300">
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
+          <span className="font-bold text-slate-900">What are the transaction limits for Business accounts?</span>
+          <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+          </span>
+        </summary>
+        <div className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-slate-100/50 pt-4">
+          For Business accounts: General withdrawals/transfers are limited to $5,000/day for accounts under 30 days old, and $10,000/day for accounts 30+ days old. Card transactions are limited to $5,000/day (max 20 transactions) for new accounts, and $10,000/day (max 30 transactions) for established accounts.
+        </div>
+      </details>
+
+      {/* 14. MFS Withdrawal Limits */}
+      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-[#E61C5D]/20 transition-all duration-300">
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
+          <span className="font-bold text-slate-900">Is there a limit for withdrawals to Mobile Financial Services?</span>
+          <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+          </span>
+        </summary>
+        <div className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-slate-100/50 pt-4">
+          Yes. Withdrawals to Mobile Financial Services like bKash are limited to $500 per 24 hours for both Personal and Business accounts. This limit applies regardless of account age.
+        </div>
+      </details>
+
+    </div>
+  </div>
+</section>
 
       {/* --- FOOTER CTA --- */}
-      <section className="py-24 bg-[#0F172A] relative overflow-hidden">
+      <motion.section 
+        id="contact"
+        className="py-24 bg-[#0F172A] relative overflow-hidden"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        variants={staggerContainer}
+      >
          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#E61C5D]/10 blur-[100px] rounded-full translate-x-1/3 -translate-y-1/2 pointer-events-none"></div>
          <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-600/10 blur-[80px] rounded-full -translate-x-1/3 translate-y-1/3 pointer-events-none"></div>
          
          <div className="container mx-auto px-6 relative z-10 text-center max-w-2xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-6 tracking-tight">
-                Ready to save on fees?
-            </h2>
-            <p className="text-slate-400 text-lg mb-10 leading-relaxed">
-                Join thousands of users who trust Priyo Pay for their international banking needs.
-            </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <Link href="https://pay.priyo.com" className="inline-flex items-center justify-center gap-2 bg-[#E61C5D] text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-[#c9154e] hover:shadow-lg hover:shadow-[#E61C5D]/25 transition-all duration-300">
-                    Get Started Free
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
-                </Link>
-                <Link href="/contact" className="inline-flex items-center justify-center gap-2 bg-white/5 text-white border border-white/10 px-8 py-4 rounded-2xl font-bold text-lg hover:bg-white/10 transition-all duration-300">
+            <motion.div
+              variants={slideUpVariants}
+            >
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-6 tracking-tight">
+                  Ready to save on fees?
+              </h2>
+              <p className="text-slate-400 text-lg mb-10 leading-relaxed">
+                  Join thousands of users who trust Priyo Pay for their international banking needs.
+              </p>
+              <div className="flex flex-col sm:flex-row justify-center gap-4">
+                  <motion.a
+                    href="https://pay.priyo.com"
+                    variants={slideUpVariants}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="inline-flex items-center justify-center gap-2 bg-[#E61C5D] text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-[#c9154e] hover:shadow-lg hover:shadow-[#E61C5D]/25 transition-all duration-300"
+                  >
+                      Get Started FREE
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                  </motion.a>
+                  <motion.a
+                    href="/contact"
+                    variants={slideUpVariants}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="inline-flex items-center justify-center gap-2 bg-white/5 text-white border border-white/10 px-8 py-4 rounded-2xl font-bold text-lg hover:bg-white/10 transition-all duration-300"
+                  >
                     Contact Sales
                 </Link>
             </div>
