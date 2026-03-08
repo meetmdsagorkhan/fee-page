@@ -104,17 +104,51 @@ const SubNavigation = ({ activeSection, setActiveSection, accountType }: any) =>
     }
     setActiveSection(sectionId);
   };
+
+  // Auto-detect active section on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY + 200; // Offset for better detection
+      
+      for (const item of SUB_NAV_ITEMS) {
+        const sectionId = `${accountType}-${item.id}`;
+        const element = document.getElementById(sectionId);
+        
+        if (element) {
+          const { offsetTop, offsetHeight } = element;
+          
+          // Check if current scroll position is within this section
+          if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
+            if (activeSection !== sectionId) {
+              setActiveSection(sectionId);
+            }
+            break;
+          }
+        }
+      }
+    };
+
+    // Initial check
+    handleScroll();
+    
+    // Add scroll listener
+    window.addEventListener('scroll', handleScroll);
+    
+    // Cleanup
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [activeSection, accountType]);
+
   return (
-    <div className="sticky top-[145px] z-30 bg-gradient-to-b from-white/90 to-white/60 backdrop-blur-lg border-b border-white/20 shadow-lg rounded-2xl">
-      <div className="container mx-auto px-6">
-        <div className="flex items-center justify-center gap-6 py-3 overflow-x-auto">
+    <div className="sticky top-[145px] z-30 bg-gradient-to-b from-white/90 to-white/60 backdrop-blur-lg border-r border-white/20 shadow-lg rounded-r-2xl">
+      <div className="px-4 py-4">
+        <div className="flex flex-col items-start gap-2 overflow-y-auto">
           {SUB_NAV_ITEMS.map((item) => {
             const sectionId = `${accountType}-${item.id}`;
             return (
               <button
                 key={item.id}
                 onClick={() => scrollToSection(sectionId)}
-                className={`px-4 py-2 text-xs font-medium whitespace-nowrap rounded-lg transition-all duration-200 ${
+                className={`px-4 py-3 text-xs font-medium whitespace-nowrap rounded-lg transition-all duration-200 text-left w-full ${
                   activeSection === sectionId
                     ? 'bg-[#E61C5D] text-white shadow-md'
                     : 'text-slate-600 hover:text-[#E61C5D] hover:bg-white'
@@ -198,7 +232,7 @@ export default function FeesPage() {
 
       {/* --- DETAILED FEE LISTS --- */}
       <section className="py-12 px-6">
-        <div className="container mx-auto max-w-5xl space-y-10">
+        <div className="container mx-auto max-w-7xl">
           
           {/* Account Type Navigation */}
           <AccountTypeNavigation 
@@ -206,17 +240,22 @@ export default function FeesPage() {
             setActiveAccountType={setActiveAccountType} 
           />
           
-          {/* Sub Navigation */}
-          <SubNavigation 
-            activeSection={activeSection} 
-            setActiveSection={setActiveSection} 
-            accountType={activeAccountType}
-          />
-          
-          {/* Personal Account Section */}
-          {activeAccountType === 'personal' && (
-            <AccountTypeSection>
-              <FeeSubsection title="Maintenance & Service Fees" id="personal-maintenance-service-fees">
+          <div className="flex gap-6 mt-6">
+            {/* Sub Navigation - Vertical Left Sidebar */}
+            <div className="w-64 flex-shrink-0">
+              <SubNavigation 
+                activeSection={activeSection} 
+                setActiveSection={setActiveSection} 
+                accountType={activeAccountType}
+              />
+            </div>
+            
+            {/* Main Content */}
+            <div className="flex-1 max-w-4xl">
+              {/* Personal Account Section */}
+              {activeAccountType === 'personal' && (
+                <AccountTypeSection>
+                  <FeeSubsection title="Maintenance & Service Fees" id="personal-maintenance-service-fees">
                 <FeeRow 
                   label="Maintenance Fee (1 USD, 1 Virtual Card & 1 BDT Account)" 
                   desc={<> <span className="text-[#E61C5D] font-bold">FREE</span> If you bring $5,000 / year <a href="https://pay.priyo.com/fee-waiver" target="_blank" rel="noopener noreferrer" className="text-[#E61C5D] hover:text-[#c9154e] underline font-bold">Learn more</a>. </>} 
@@ -588,7 +627,8 @@ export default function FeesPage() {
               </FeeSubsection>
             </AccountTypeSection>
           )}
-
+            </div>
+          </div>
         </div>
       </section>
 
@@ -618,7 +658,7 @@ export default function FeesPage() {
       {/* 2. Fee Waiver */}
       <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-[#E61C5D]/20 transition-all duration-300">
         <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
-          <span className="font-bold text-[#E61C5D]">How can I waive the maintenance fee?</span>
+          <span className="font-bold text-slate-900">How can I waive the maintenance fee?</span>
           <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
