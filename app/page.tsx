@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 
 const SUB_NAV_ITEMS = [
@@ -33,7 +34,7 @@ const FeeRow = ({ label, desc, price, period, isHighlight = false }: any) => (
   <div className="flex flex-col sm:flex-row sm:items-center justify-between py-5 gap-4 group">
     <div className="flex-1">
       <div className="flex items-center gap-3">
-        <span className="text-sm font-bold text-slate-900 group-hover:text-[#E61C5D] transition-colors">
+        <span className="text-sm font-bold text-slate-900 group-hover:text-emerald-500 transition-colors">
           {label}
         </span>
       </div>
@@ -41,7 +42,7 @@ const FeeRow = ({ label, desc, price, period, isHighlight = false }: any) => (
     </div>
     
     <div className="text-left sm:text-right shrink-0">
-      <div className={`text-base font-bold ${price === 'FREE' || price === '$0.00' ? 'text-[#E61C5D]' : 'text-slate-900'}`}>
+      <div className={`text-base font-bold ${price === 'FREE' || price === '$0.00' ? 'text-emerald-500' : 'text-slate-900'}`}>
         {price}
       </div>
       {period && <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mt-0.5">{period}</div>}
@@ -51,7 +52,7 @@ const FeeRow = ({ label, desc, price, period, isHighlight = false }: any) => (
 
 const FeeSubsection = ({ title, children, id }: any) => (
   <div className="mb-8" id={id}>
-    <h4 className="text-lg font-bold text-center text-[#E61C5D] mb-4 pb-2 border-b border-slate-200">{title}</h4>
+    <h4 className="text-lg font-bold text-center text-emerald-500 mb-4 pb-2 border-b border-slate-200">{title}</h4>
     <div className="space-y-1">
       {children}
     </div>
@@ -75,8 +76,8 @@ const AccountTypeNavigation = ({ activeAccountType, setActiveAccountType }: any)
               onClick={() => setActiveAccountType(account.id)}
               className={`px-8 py-3 text-sm font-semibold rounded-xl transition-all duration-200 ${
                 activeAccountType === account.id
-                  ? 'bg-[#E61C5D] text-white shadow-lg shadow-[#E61C5D]/25'
-                  : 'text-slate-600 hover:text-[#E61C5D] hover:bg-slate-50'
+                  ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/25'
+                  : 'text-slate-600 hover:text-emerald-500 hover:bg-slate-50'
               }`}
             >
               {account.label}
@@ -150,8 +151,8 @@ const SubNavigation = ({ activeSection, setActiveSection, accountType }: any) =>
                 onClick={() => scrollToSection(sectionId)}
                 className={`px-4 py-3 text-xs font-medium whitespace-nowrap rounded-lg transition-all duration-200 text-left w-full ${
                   activeSection === sectionId
-                    ? 'bg-[#E61C5D] text-white shadow-md'
-                    : 'text-slate-600 hover:text-[#E61C5D] hover:bg-white'
+                    ? 'bg-emerald-500 text-white shadow-md'
+                    : 'text-slate-600 hover:text-emerald-500 hover:bg-white'
                 }`}
               >
                 {item.label}
@@ -177,16 +178,244 @@ const AccountTypeSection = ({ children }: any) => (
 // 2. Main Page Content
 // ----------------------------------------------------------------------
 
+// Fee Calculator State and Functions
+const useFeeCalculator = () => {
+  const [calculatorAccount, setCalculatorAccount] = useState('personal');
+  const [calculatorService, setCalculatorService] = useState('');
+  const [calculatorAmount, setCalculatorAmount] = useState('');
+  const [transactionCount, setTransactionCount] = useState('1');
+
+  const getCalculatorLabel = () => {
+    const labels: Record<string, string> = {
+      'virtual-card': 'Number of Cards',
+      'physical-card': 'Number of Cards',
+      'card-shipping': 'Number of Shipments',
+      'maintenance': 'Number of Accounts',
+      'additional-account': 'Number of Accounts',
+      'incoming-ach': 'Transaction Amount ($)',
+      'outgoing-ach': 'Transaction Amount ($)',
+      'incoming-wire': 'Transaction Amount ($)',
+      'outgoing-wire': 'Transaction Amount ($)',
+      'incoming-wire-intl': 'Transaction Amount ($)',
+      'p2p': 'Transaction Amount ($)',
+      'third-party': 'Transaction Amount ($)',
+      'cross-border': 'Transaction Amount ($)',
+      'usd-to-bdt': 'Transaction Amount ($)',
+      'atm': 'Transaction Amount ($)'
+    };
+    return labels[calculatorService] || 'Amount';
+  };
+
+  const getServiceName = () => {
+    const names: Record<string, string> = {
+      'virtual-card': 'Virtual Card',
+      'physical-card': 'Physical Card',
+      'card-shipping': 'Card Shipping',
+      'maintenance': 'Maintenance Fee',
+      'additional-account': 'Additional USD Account',
+      'incoming-ach': 'Incoming ACH',
+      'outgoing-ach': 'Outgoing ACH',
+      'incoming-wire': 'Incoming Wire (Domestic)',
+      'outgoing-wire': 'Outgoing Wire (Domestic)',
+      'incoming-wire-intl': 'Incoming Wire (International)',
+      'p2p': 'P2P Transfer',
+      'third-party': 'Third-Party Payment',
+      'cross-border': 'Cross-Border Payment',
+      'usd-to-bdt': 'USD to BDT Conversion',
+      'atm': 'ATM Withdrawal'
+    };
+    return names[calculatorService] || '';
+  };
+
+  const getFeeRate = () => {
+    const rates: Record<string, string> = {
+      'virtual-card': calculatorAccount === 'personal' ? '$3.00 per card' : 'FREE (first 50)',
+      'physical-card': '$19.95 per year + $5.00 shipping (included)',
+      'card-shipping': '$5.00 per shipment',
+      'maintenance': calculatorAccount === 'personal' ? '$10 per 6 months' : 'FREE',
+      'additional-account': calculatorAccount === 'personal' ? '$10 per 6 months' : '$10 per 6 months',
+      'incoming-ach': '$0.25 per transaction (first 10 free monthly)',
+      'outgoing-ach': '1% of transaction amount (max $5.00)',
+      'incoming-wire': '$10.00 per transaction',
+      'outgoing-wire': '$10.00 + 1% of amount (max $20.00)',
+      'incoming-wire-intl': '$25.00 per transaction',
+      'p2p': '1% of transaction amount (min $1.00, max $1,000)',
+      'third-party': '2% of transaction amount (min $1.00)',
+      'cross-border': '1% of transaction amount',
+      'usd-to-bdt': '1% of transaction amount (min $0.99)',
+      'atm': '1% of transaction amount (min $3.00)'
+    };
+    return rates[calculatorService] || '';
+  };
+
+  const calculateFee = () => {
+    const amount = parseFloat(calculatorAmount || '0');
+    const transactions = parseFloat(transactionCount || '1');
+    if (!amount || !calculatorService) return 0;
+
+    // Always use the actual entered amount for calculation
+    switch (calculatorService) {
+      case 'virtual-card':
+        return calculatorAccount === 'personal' ? amount * 3 : Math.max(0, (amount - 50) * 3);
+      case 'physical-card':
+        // Physical card fee includes shipping
+        const cardFee = amount * 19.95;
+        const shippingFee = amount * 5; // $5 per shipment
+        return cardFee + shippingFee;
+      case 'card-shipping':
+        return amount * 5;
+      case 'maintenance':
+        return calculatorAccount === 'personal' ? Math.ceil(amount / 2) * 10 : 0;
+      case 'additional-account':
+        if (calculatorAccount === 'personal') {
+          // Personal accounts: $10 per account (no free accounts)
+          return amount * 10;
+        } else {
+          // Business accounts: First 5 free, then $10 each
+          const freeAccounts = 5;
+          return Math.max(0, (amount - freeAccounts) * 10);
+        }
+      case 'incoming-ach':
+        // $0.25 per transaction (first 10 free)
+        const achFee = Math.max(0, (transactions - 10) * 0.25);
+        return achFee;
+      case 'outgoing-ach':
+        // 1% with $5 max per transaction
+        const achOutFee = Math.min(5, amount * 0.01);
+        return achOutFee * transactions;
+      case 'incoming-wire':
+        // $10 per transaction
+        return 10 * transactions;
+      case 'outgoing-wire':
+        // $10 + 1% with $20 max per transaction
+        const wireFee = Math.min(20, 10 + (amount * 0.01));
+        return wireFee * transactions;
+      case 'incoming-wire-intl':
+        // $25 per transaction
+        return 25 * transactions;
+      case 'p2p':
+        // 1% with $1 min and $1,000 max per transaction
+        const p2pFee = Math.min(1000, Math.max(1, amount * 0.01));
+        return p2pFee * transactions;
+      case 'third-party':
+        // 2% with $1 min per transaction
+        const thirdPartyFee = Math.max(1, amount * 0.02);
+        return thirdPartyFee * transactions;
+      case 'cross-border':
+        // 1% per transaction
+        return (amount * 0.01) * transactions;
+      case 'usd-to-bdt':
+        // 1% with $0.99 min per transaction
+        const bdtFee = Math.max(0.99, amount * 0.01);
+        return bdtFee * transactions;
+      case 'atm':
+        // 1% with $3 min per transaction
+        const atmFee = Math.max(3, amount * 0.01);
+        return atmFee * transactions;
+      default:
+        return 0;
+    }
+  };
+
+  const getAccountLimits = () => {
+    const amount = parseFloat(calculatorAmount || '0');
+    if (!amount || !calculatorService) return null;
+
+    const limits: Record<string, Record<string, { max: number; current: string; description: string }>> = {
+      personal: {
+        'virtual-card': { max: 2, current: 'Virtual Card', description: 'Maximum 2 virtual cards per USD account' },
+        'physical-card': { max: 1, current: 'Physical Card', description: 'Maximum 1 physical card per USD account' },
+        'additional-account': { max: 10, current: 'USD Account', description: 'Maximum 10 USD accounts per profile' },
+        'p2p': { max: 1000, current: 'P2P Transfer', description: 'Maximum $1,000 per P2P transaction' },
+        'atm': { max: 500, current: 'ATM Withdrawal', description: 'Maximum $500 per 24 hours for withdrawals to MFS' }
+      },
+      business: {
+        'virtual-card': { max: 50, current: 'Virtual Card', description: 'Maximum 50 virtual cards per USD account' },
+        'physical-card': { max: 1, current: 'Physical Card', description: 'Maximum 1 physical card per USD account' },
+        'additional-account': { max: 5, current: 'USD Account', description: 'Maximum 5 USD accounts per business' },
+        'p2p': { max: 10000, current: 'P2P Transfer', description: 'Maximum $10,000 per P2P transaction' },
+        'atm': { max: 500, current: 'ATM Withdrawal', description: 'Maximum $500 per 24 hours for withdrawals to MFS' }
+      }
+    };
+
+    const accountLimits = limits[calculatorAccount];
+    if (accountLimits && accountLimits[calculatorService]) {
+      const limit = accountLimits[calculatorService];
+      if (amount > limit.max) {
+        return {
+          current: amount,
+          max: limit.max,
+          description: limit.description,
+          service: limit.current
+        };
+      }
+    }
+    return null;
+  };
+
+  const getFeeNote = () => {
+    const limitInfo = getAccountLimits();
+    if (limitInfo) {
+      return `⚠️ Limit exceeded: ${limitInfo.description}. You requested ${limitInfo.current} but maximum is ${limitInfo.max}.`;
+    }
+
+    const notes: Record<string, string> = {
+      'virtual-card': calculatorAccount === 'personal' ? 'First virtual card is FREE for personal accounts only. Business accounts get first 50 cards FREE.' : 'First 50 virtual cards are FREE for business accounts.',
+      'maintenance': calculatorAccount === 'business' ? 'FREE for up to 5 USD accounts for business accounts.' : 'FREE for personal accounts if you bring $5,000/year in deposits.',
+      'additional-account': calculatorAccount === 'personal' ? 'Additional USD accounts cost $10 each for personal accounts.' : 'First 5 USD accounts are FREE for business accounts.',
+      'incoming-ach': 'First 10 transactions are FREE every month for all account types.',
+      'outgoing-ach': 'Maximum fee is $5.00 regardless of transaction amount.',
+      'outgoing-wire': 'Maximum fee is $20.00 regardless of transaction amount.',
+      'p2p': 'Business to Business transfers only.'
+    };
+    return notes[calculatorService] || '';
+  };
+
+  return {
+    calculatorAccount,
+    setCalculatorAccount,
+    calculatorService,
+    setCalculatorService,
+    calculatorAmount,
+    setCalculatorAmount,
+    transactionCount,
+    setTransactionCount,
+    getCalculatorLabel,
+    getServiceName,
+    getFeeRate,
+    calculateFee,
+    getAccountLimits,
+    getFeeNote
+  };
+};
+
 export default function FeesPage() {
   const [activeAccountType, setActiveAccountType] = useState('personal');
   const [activeSection, setActiveSection] = useState('personal-maintenance-service-fees');
+  
+  const {
+    calculatorAccount,
+    setCalculatorAccount,
+    calculatorService,
+    setCalculatorService,
+    calculatorAmount,
+    setCalculatorAmount,
+    transactionCount,
+    setTransactionCount,
+    getCalculatorLabel,
+    getServiceName,
+    getFeeRate,
+    calculateFee,
+    getAccountLimits,
+    getFeeNote
+  } = useFeeCalculator();
 
   useEffect(() => {
     setActiveSection(`${activeAccountType}-maintenance-service-fees`);
   }, [activeAccountType]);
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-[#E61C5D] selection:text-white">
+    <div className="min-h-screen bg-slate-50 font-['Inter',_'DM_Sans'] text-slate-900 selection:bg-emerald-500 selection:text-white">
       
       {/* --- HEADER --- */}
       <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
@@ -195,7 +424,7 @@ export default function FeesPage() {
              <span className="text-xl font-extrabold text-slate-900 tracking-tight">Priyo Pay</span>
           </Link>
           <div className="flex items-center gap-4">
-            <Link href="https://pay.priyo.com" className="bg-slate-900 text-white px-5 py-2 rounded-xl font-semibold text-sm hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/10">
+            <Link href="https://pay.priyo.com" className="bg-emerald-500 text-white px-5 py-2 rounded-xl font-semibold text-sm hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/10">
                 Open Account
             </Link>
           </div>
@@ -203,29 +432,381 @@ export default function FeesPage() {
       </header>
 
       {/* --- HERO SECTION --- */}
-      <section className="relative overflow-hidden bg-white">
-        <div className="absolute right-4 md:right-12 lg:right-20 top-1/2 transform -translate-y-1/2 opacity-30 md:opacity-60 lg:opacity-100">
-          <img src="/hero_image.png" alt="Fees Hero" className="h-[250px] md:h-[400px] lg:h-[500px] 2xl:h-[600px] w-auto object-cover" />
+      <section className="relative overflow-hidden bg-white min-h-[80vh] flex items-center">
+        {/* Enhanced Background Elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {/* Animated gradient orbs */}
+          <motion.div 
+            className="absolute top-0 right-0 w-[600px] h-[600px] bg-emerald-500/10 rounded-full blur-[100px]"
+            animate={{
+              x: [0, 100, 0],
+              y: [0, -50, 0],
+              scale: [1, 1.2, 1],
+            }}
+            transition={{
+              duration: 8,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          />
+          <motion.div 
+            className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[80px]"
+            animate={{
+              x: [0, -80, 0],
+              y: [0, 60, 0],
+              scale: [1, 0.8, 1],
+            }}
+            transition={{
+              duration: 10,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          />
+          <motion.div 
+            className="absolute top-1/2 left-1/2 w-[400px] h-[400px] bg-purple-500/5 rounded-full blur-[60px]"
+            animate={{
+              x: [0, 120, -120, 0],
+              y: [0, -80, 80, 0],
+              scale: [1, 1.1, 0.9, 1],
+            }}
+            transition={{
+              duration: 15,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          />
+          
+          {/* Floating particles */}
+          {[...Array(6)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-2 h-2 bg-emerald-500/30 rounded-full"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+              }}
+              animate={{
+                y: [0, -100, 0],
+                x: [0, Math.random() * 50 - 25, 0],
+                opacity: [0, 1, 0],
+              }}
+              transition={{
+                duration: 3 + Math.random() * 2,
+                repeat: Infinity,
+                delay: Math.random() * 2,
+                ease: "easeInOut"
+              }}
+            />
+          ))}
+          
+          {/* Grid pattern */}
+          <div className="absolute inset-0 bg-grid-pattern opacity-30"></div>
         </div>
+
         <div className="relative z-10 w-full py-12 md:py-16 lg:py-20 lg:px-0 px-8">
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#E61C5D]/5 blur-[100px] rounded-full translate-x-1/3 -translate-y-1/2 pointer-events-none"></div>
-            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-slate-100/50 blur-[80px] rounded-full -translate-x-1/3 translate-y-1/3 pointer-events-none"></div>
-          </div>
-          <div className="mx-auto flex flex-col gap-4 relative z-10 max-w-5xl 2xl:max-w-[1500px]">
-            <div className="text-lg md:text-xl lg:text-2xl 2xl:text-3xl text-slate-600 tracking-tight">No Hidden Charges</div>
-            <h1 className="text-5xl lg:text-6xl 2xl:text-8xl max-w-4xl font-extrabold text-slate-900 tracking-tight">Fees</h1>
-            <div className="text-base md:text-lg lg:text-xl 2xl:text-2xl mb-6 md:mb-8 2xl:max-w-2xl lg:max-w-xl max-w-sm leading-relaxed text-slate-600 mt-2 md:mt-4">
-              Explore a clear breakdown of Priyo Pay fees for cards, accounts, and international transfers. Designed to help you manage costs and make informed financial decisions.
-              <br /><br />
-              Account subscription fees and fees for additional USD accounts and virtual cards (for both personal and business accounts) are billed six months in advance.
-            </div>
-            <a target="_blank" href="https://pay.priyo.com" className="inline-flex items-center gap-2 bg-[#E61C5D] text-white px-6 py-3 rounded-xl font-semibold text-base hover:bg-[#c9154e] hover:shadow-lg hover:shadow-[#E61C5D]/25 transition-all duration-300 w-fit">
-              Open Account
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-              </svg>
-            </a>
+          <div className="mx-auto flex flex-col lg:flex-row gap-12 relative z-10 max-w-5xl 2xl:max-w-[1500px] items-center">
+            {/* Left Column - Hero Content */}
+            <motion.div 
+              className="flex-1"
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+            >
+              <motion.div 
+                className="text-lg md:text-xl lg:text-2xl 2xl:text-3xl text-slate-600 tracking-tight mb-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+              >
+                No Hidden Charges
+              </motion.div>
+              <motion.h1 
+                className="text-5xl lg:text-6xl 2xl:text-8xl max-w-4xl font-extrabold text-slate-900 tracking-tight mb-6"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
+              >
+                Fees
+              </motion.h1>
+              <motion.div 
+                className="text-base md:text-lg lg:text-xl 2xl:text-2xl mb-6 md:mb-8 2xl:max-w-2xl lg:max-w-xl max-w-sm leading-relaxed text-slate-600 mt-2 md:mt-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
+              >
+                Explore a clear breakdown of Priyo Pay fees for cards, accounts, and international transfers. Designed to help you manage costs and make informed financial decisions.
+                <br /><br />
+                Our calculator shows real-time fees for all services including account limits and special offers for both personal and business accounts.
+              </motion.div>
+              <motion.a 
+                target="_blank" 
+                href="https://pay.priyo.com" 
+                className="inline-flex items-center gap-2 bg-emerald-500 text-white px-6 py-3 rounded-xl font-semibold text-base hover:bg-emerald-600 hover:shadow-lg hover:shadow-emerald-500/25 transition-all duration-300 w-fit"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.8, ease: "easeOut" }}
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                Open Account
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </motion.a>
+            </motion.div>
+            
+            {/* Right Column - Fee Calculator */}
+            <motion.div 
+              className="flex-1 lg:max-w-md"
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
+            >
+              <div className="bg-gradient-to-br from-white to-emerald-50/30 rounded-3xl border border-emerald-200/50 shadow-2xl p-8 backdrop-blur-sm relative overflow-hidden">
+                {/* Animated Background Elements */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl animate-pulse"></div>
+                <div className="absolute bottom-0 left-0 w-24 h-24 bg-blue-500/10 rounded-full blur-xl animate-pulse delay-75"></div>
+                
+                {/* Header */}
+                <motion.div 
+                  className="relative z-10"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
+                >
+                  <div className="flex items-center gap-3 mb-6">
+                    <motion.div 
+                      className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/25"
+                      whileHover={{ scale: 1.1, rotate: 5 }}
+                      transition={{ type: "spring", stiffness: 300 }}
+                    >
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                      </svg>
+                    </motion.div>
+                    <div>
+                      <h3 className="text-xl font-bold text-slate-900">Fee Calculator</h3>
+                      <p className="text-sm text-slate-600">Calculate your costs instantly</p>
+                    </div>
+                  </div>
+                </motion.div>
+                
+                <div className="space-y-5 relative z-10">
+                  {/* Account Type Selection */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.8, ease: "easeOut" }}
+                  >
+                    <label className="block text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                      <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      Account Type
+                    </label>
+                    <div className="flex gap-3">
+                      <motion.button
+                        onClick={() => setCalculatorAccount('personal')}
+                        className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all duration-300 transform ${
+                          calculatorAccount === 'personal'
+                            ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/30 ring-2 ring-emerald-500/50'
+                            : 'bg-slate-100 text-slate-700 hover:bg-slate-200 hover:shadow-md'
+                        }`}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <span className="flex items-center justify-center gap-2">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                          Personal
+                        </span>
+                      </motion.button>
+                      <motion.button
+                        onClick={() => setCalculatorAccount('business')}
+                        className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all duration-300 transform ${
+                          calculatorAccount === 'business'
+                            ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/30 ring-2 ring-emerald-500/50'
+                            : 'bg-slate-100 text-slate-700 hover:bg-slate-200 hover:shadow-md'
+                        }`}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <span className="flex items-center justify-center gap-2">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                          </svg>
+                          Business
+                        </span>
+                      </motion.button>
+                    </div>
+                  </motion.div>
+
+                  {/* Service Type Selection */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 1.0, ease: "easeOut" }}
+                  >
+                    <label className="block text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                      <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                      </svg>
+                      Service Type
+                    </label>
+                    <motion.select
+                      value={calculatorService}
+                      onChange={(e) => setCalculatorService(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 text-sm bg-white/80 backdrop-blur-sm hover:bg-white"
+                      whileFocus={{ scale: 1.02 }}
+                    >
+                      <option value="">Select a service</option>
+                      <optgroup label="💳 Card Services">
+                        <option value="virtual-card">Virtual Card</option>
+                        <option value="physical-card">Physical Card (includes shipping)</option>
+                      </optgroup>
+                      <optgroup label="🏦 Account Services">
+                        <option value="maintenance">Maintenance Fee</option>
+                        <option value="additional-account">Additional USD Account</option>
+                      </optgroup>
+                      <optgroup label="💸 Money Transfers">
+                        <option value="incoming-ach">Incoming ACH</option>
+                        <option value="outgoing-ach">Outgoing ACH</option>
+                        <option value="incoming-wire">Incoming Wire (Domestic)</option>
+                        <option value="outgoing-wire">Outgoing Wire (Domestic)</option>
+                        <option value="incoming-wire-intl">Incoming Wire (International)</option>
+                        <option value="p2p">P2P Transfer</option>
+                        <option value="third-party">Third-Party Payment</option>
+                        <option value="cross-border">Cross-Border Payment</option>
+                        <option value="usd-to-bdt">USD to BDT Conversion</option>
+                        <option value="atm">ATM Withdrawal</option>
+                      </optgroup>
+                    </motion.select>
+                  </motion.div>
+
+                  {/* Amount Input */}
+                  <AnimatePresence>
+                    {calculatorService && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.4, ease: "easeOut" }}
+                      >
+                        <label className="block text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                          <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          {getCalculatorLabel()}
+                        </label>
+                        <div className="relative">
+                          <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-medium">$</span>
+                          <motion.input
+                            type="number"
+                            value={calculatorAmount}
+                            onChange={(e) => setCalculatorAmount(e.target.value)}
+                            placeholder="0.00"
+                            className="w-full pl-8 pr-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 text-sm bg-white/80 backdrop-blur-sm hover:bg-white"
+                            whileFocus={{ scale: 1.02 }}
+                          />
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Transaction Count Input */}
+                  <AnimatePresence>
+                    {calculatorService && [
+                      'incoming-ach', 'outgoing-ach', 'incoming-wire', 'outgoing-wire', 
+                      'incoming-wire-intl', 'p2p', 'third-party', 'cross-border', 
+                      'usd-to-bdt', 'atm'
+                    ].includes(calculatorService) && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.4, delay: 0.1, ease: "easeOut" }}
+                      >
+                        <label className="block text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                          <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                          </svg>
+                          Number of Transactions
+                        </label>
+                        <motion.input
+                          type="number"
+                          value={transactionCount}
+                          onChange={(e) => setTransactionCount(e.target.value)}
+                          placeholder="1"
+                          min="1"
+                          className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 text-sm bg-white/80 backdrop-blur-sm hover:bg-white"
+                          whileFocus={{ scale: 1.02 }}
+                        />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                  
+                  {/* Results Section */}
+                  <AnimatePresence>
+                    {calculatorService && calculatorAmount && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.5, ease: "easeOut" }}
+                      >
+                        {getAccountLimits() ? (
+                          <div className="space-y-3">
+                            <div className="bg-red-50 border border-red-200 rounded-xl p-4 animate-pulse">
+                              <div className="flex items-center gap-2 mb-2">
+                                <svg className="w-5 h-5 text-red-500 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                </svg>
+                                <span className="text-sm font-semibold text-red-700">Account Limit Exceeded</span>
+                              </div>
+                              <p className="text-xs text-red-600">{getFeeNote()}</p>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-slate-600">Fee Rate:</span>
+                              <span className="text-sm font-semibold text-slate-900">{getFeeRate()}</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-base font-bold text-slate-900">Total Fee:</span>
+                              <span className="text-xl font-bold text-emerald-500">
+                                ${calculateFee().toLocaleString()}
+                              </span>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            <div className="flex justify-between items-center py-3 border-b border-slate-200">
+                              <span className="text-sm text-slate-600">Fee Rate:</span>
+                              <span className="text-sm font-semibold text-slate-900">{getFeeRate()}</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-base font-bold text-slate-900">Total Fee:</span>
+                              <span className="text-2xl font-bold bg-gradient-to-r from-emerald-500 to-emerald-600 bg-clip-text text-transparent">
+                                ${calculateFee().toLocaleString()}
+                              </span>
+                            </div>
+                            {getFeeNote() && (
+                              <div className="mt-3 p-3 bg-gradient-to-r from-emerald-50 to-emerald-100/50 rounded-lg border border-emerald-200/50">
+                                <p className="text-xs text-emerald-700 flex items-start gap-2">
+                                  <svg className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                  </svg>
+                                  {getFeeNote()}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -258,19 +839,19 @@ export default function FeesPage() {
                   <FeeSubsection title="Maintenance & Service Fees" id="personal-maintenance-service-fees">
                 <FeeRow 
                   label="Maintenance Fee (1 USD, 1 Virtual Card & 1 BDT Account)" 
-                  desc={<> <span className="text-[#E61C5D] font-bold">FREE</span> If you bring $5,000 / year <a href="https://pay.priyo.com/fee-waiver" target="_blank" rel="noopener noreferrer" className="text-[#E61C5D] hover:text-[#c9154e] underline font-bold">Learn more</a>. </>} 
+                  desc={<> <span className="text-emerald-500 font-bold">FREE</span> If you bring $5,000 / year <a href="https://pay.priyo.com/fee-waiver" target="_blank" rel="noopener noreferrer" className="text-emerald-500 hover:text-emerald-600 underline font-bold">Learn more</a>. </>} 
                   price="$10" 
                   period="Every 6 months"
                 />
                 <FeeRow 
                   label="Maintenance Fee (BDT Account Only)" 
-                  desc={<>Payable in every 12 months. <span className='text-[#E61C5D] font-bold'>FREE</span> for USD Account Holder.</>} 
+                  desc={<>Payable in every 12 months. <span className='text-emerald-500 font-bold'>FREE</span> for USD Account Holder.</>} 
                   price="৳199.00" 
                   period="Yearly"
                 />
                 <FeeRow 
                   label="Virtual Card (Debit)" 
-                  desc={<>The first virtual debit card for your personal account is <span className='text-[#E61C5D] font-bold'>FREE</span>. Any additional cards incur a fee.</>} 
+                  desc={<>The first virtual debit card for your personal account is <span className='text-emerald-500 font-bold'>FREE</span>. Any additional cards incur a fee.</>} 
                   price="$3.00" 
                   period="One-time"
                 />
@@ -296,7 +877,7 @@ export default function FeesPage() {
                 />
                 <FeeRow 
                   label="Incoming ACH - from Any Bank in the USA" 
-                  desc={<>First 10 transactions are <span className='text-[#E61C5D] font-bold'>FREE</span> every month.</>} 
+                  desc={<>First 10 transactions are <span className='text-emerald-500 font-bold'>FREE</span> every month.</>} 
                   price="$0.25" 
                   period="Per transaction"
                 />
@@ -448,17 +1029,17 @@ export default function FeesPage() {
               <FeeSubsection title="Maintenance & Service Fees" id="business-maintenance-service-fees">
                 <FeeRow 
                   label="Maintenance Fee" 
-                  desc={<>Zero monthly fee. <span className='text-[#E61C5D] font-bold'>FREE</span> forever.</>}
+                  desc={<>Zero monthly fee. <span className='text-emerald-500 font-bold'>FREE</span> forever.</>}
                   price="FREE" 
-                  period="Upto 2 USD Accounts"
+                  period="Upto 5 USD Accounts"
                   
                 />
                 
                 <FeeRow 
                   label="Virtual Card (Debit)" 
-                  desc={<>Zero monthly fee. <span className='text-[#E61C5D] font-bold'>FREE</span> forever.</>}
+                  desc={<>Zero monthly fee. <span className='text-emerald-500 font-bold'>FREE</span> forever.</>}
                   price="FREE" 
-                  period="Upto 20 Cards"
+                  period="Upto 50 Cards"
                 />
                 <FeeRow 
                   label="Physical Card (Plastic)" 
@@ -482,7 +1063,7 @@ export default function FeesPage() {
                 />
                 <FeeRow 
                   label="Incoming ACH - from Any Bank in the USA" 
-                  desc={<>First 10 transactions are <span className='text-[#E61C5D] font-bold'>FREE</span> every month.</>} 
+                  desc={<>First 10 transactions are <span className='text-emerald-500 font-bold'>FREE</span> every month.</>} 
                   price="$0.25" 
                   period="Per transaction"
                 />
@@ -521,13 +1102,13 @@ export default function FeesPage() {
                 />
                 <FeeRow 
                   label="Outgoing ACH (USA Only)" 
-                  desc="Any Bank in the USA." 
+                  desc={<>Any Bank in the USA. <span className='text-emerald-500 font-bold'>Maximum Fee $5.00</span>, You'll never pay more than $5, regardless of the transaction amount.</>} 
                   price="1.00%" 
                   period="Per transaction"
                 />
                 <FeeRow 
                   label="Outgoing Domestic Wire" 
-                  desc="Sending Wire to any Bank in the USA." 
+                  desc={<>Sending Wire to any Bank in the USA. <span className='text-emerald-500 font-bold'>Maximum Fee $20.00</span>, You'll never pay more than $20, regardless of the transaction amount.</>} 
                   price="$10.00 + 1%" 
                   period="Per transaction"
                 />
@@ -554,13 +1135,13 @@ export default function FeesPage() {
               <FeeSubsection title="Additional Resources" id="business-additional-resources">
                 <FeeRow 
                   label="Additionl USD Accounts"
-                  desc={<>Charged per additional account. First 2 accounts are <span className='text-[#E61C5D] font-bold'>FREE</span>.</>}
+                  desc={<>Charged per additional account. First 5 accounts are <span className='text-emerald-500 font-bold'>FREE</span>.</>}
                   price="$10.00" 
                   period="Every 6 months"
                 />
                 <FeeRow 
                   label="Additional Virtual Cards" 
-                  desc={<>Charged per additional cards. First 20 cards are <span className='text-[#E61C5D] font-bold'>FREE</span>.</>}
+                  desc={<>Charged per additional cards. First 50 cards are <span className='text-emerald-500 font-bold'>FREE</span>.</>}
                   price="$3.00" 
                   period="One-time"
                 />
@@ -574,13 +1155,13 @@ export default function FeesPage() {
                 <FeeRow 
                   label="USD Account" 
                   desc="Maximum number of active USD accounts per business." 
-                  price="2" 
+                  price="5" 
                   period="Accounts"
                 />
                 <FeeRow 
                   label="Virtual Card" 
                   desc="Maximum number of virtual cards per USD account." 
-                  price="20" 
+                  price="50" 
                   period="Cards"
                 />
                 <FeeRow 
@@ -643,7 +1224,7 @@ export default function FeesPage() {
     <div className="space-y-4">
       
       {/* 1. Maintenance Fee Billing */}
-      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-[#E61C5D]/20 transition-all duration-300">
+      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-emerald-500/20 transition-all duration-300">
         <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
           <span className="font-bold text-slate-900">How is the maintenance fee billed?</span>
           <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
@@ -656,7 +1237,7 @@ export default function FeesPage() {
       </details>
 
       {/* 2. Fee Waiver */}
-      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-[#E61C5D]/20 transition-all duration-300">
+      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-emerald-500/20 transition-all duration-300">
         <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
           <span className="font-bold text-slate-900">How can I waive the maintenance fee?</span>
           <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
@@ -664,12 +1245,12 @@ export default function FeesPage() {
           </span>
         </summary>
         <div className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-slate-100/50 pt-4">
-          The maintenance fee is waived (FREE) if you bring in $5,000 or more in deposits per year. <a href="https://pay.priyo.com/fee-waiver" target="_blank" rel="noopener noreferrer" className="text-[#E61C5D] hover:text-[#c9154e] underline font-bold">Learn more</a>
+          The maintenance fee is waived (FREE) if you bring in $5,000 or more in deposits per year. <a href="https://pay.priyo.com/fee-waiver" target="_blank" rel="noopener noreferrer" className="text-emerald-500 hover:text-emerald-600 underline font-bold">Learn more</a>
         </div>
       </details>
 
       {/* 3. Virtual Cards */}
-      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-[#E61C5D]/20 transition-all duration-300">
+      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-emerald-500/20 transition-all duration-300">
         <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
           <span className="font-bold text-slate-900">Is the Virtual Card really free?</span>
           <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
@@ -682,7 +1263,7 @@ export default function FeesPage() {
       </details>
 
       {/* 4. Incoming ACH */}
-      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-[#E61C5D]/20 transition-all duration-300">
+      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-emerald-500/20 transition-all duration-300">
         <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
           <span className="font-bold text-slate-900">Are there fees for incoming ACH transfers?</span>
           <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
@@ -695,7 +1276,7 @@ export default function FeesPage() {
       </details>
 
       {/* 5. Wires */}
-      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-[#E61C5D]/20 transition-all duration-300">
+      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-emerald-500/20 transition-all duration-300">
         <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
           <span className="font-bold text-slate-900">What are the fees for Wire transfers?</span>
           <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
@@ -708,7 +1289,7 @@ export default function FeesPage() {
       </details>
 
       {/* 6. ATM Withdrawal */}
-      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-[#E61C5D]/20 transition-all duration-300">
+      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-emerald-500/20 transition-all duration-300">
         <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
           <span className="font-bold text-slate-900">Are there fees for ATM withdrawals?</span>
           <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
@@ -721,7 +1302,7 @@ export default function FeesPage() {
       </details>
 
       {/* 7. Business - Maintenance Fees */}
-      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-[#E61C5D]/20 transition-all duration-300">
+      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-emerald-500/20 transition-all duration-300">
         <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
           <span className="font-bold text-slate-900">Are there maintenance fees for Business Accounts?</span>
           <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
@@ -734,7 +1315,7 @@ export default function FeesPage() {
       </details>
 
       {/* 8. Business - Virtual Cards */}
-      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-[#E61C5D]/20 transition-all duration-300">
+      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-emerald-500/20 transition-all duration-300">
         <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
           <span className="font-bold text-slate-900">How many Virtual Cards can a business have?</span>
           <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
@@ -747,7 +1328,7 @@ export default function FeesPage() {
       </details>
 
       {/* 9. Business - P2P Transfers */}
-      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-[#E61C5D]/20 transition-all duration-300">
+      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-emerald-500/20 transition-all duration-300">
         <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
           <span className="font-bold text-slate-900">Can I use P2P transfers for my business?</span>
           <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
@@ -760,7 +1341,7 @@ export default function FeesPage() {
       </details>
 
       {/* 10. Account Limits - Personal */}
-      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-[#E61C5D]/20 transition-all duration-300">
+      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-emerald-500/20 transition-all duration-300">
         <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
           <span className="font-bold text-slate-900">How many USD accounts can I have with a Personal account?</span>
           <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
@@ -773,7 +1354,7 @@ export default function FeesPage() {
       </details>
 
       {/* 11. Account Limits - Business */}
-      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-[#E61C5D]/20 transition-all duration-300">
+      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-emerald-500/20 transition-all duration-300">
         <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
           <span className="font-bold text-slate-900">How many USD accounts can I have with a Business account?</span>
           <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
@@ -786,7 +1367,7 @@ export default function FeesPage() {
       </details>
 
       {/* 12. Transaction Limits - Personal */}
-      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-[#E61C5D]/20 transition-all duration-300">
+      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-emerald-500/20 transition-all duration-300">
         <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
           <span className="font-bold text-slate-900">What are the transaction limits for Personal accounts?</span>
           <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
@@ -799,7 +1380,7 @@ export default function FeesPage() {
       </details>
 
       {/* 13. Transaction Limits - Business */}
-      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-[#E61C5D]/20 transition-all duration-300">
+      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-emerald-500/20 transition-all duration-300">
         <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
           <span className="font-bold text-slate-900">What are the transaction limits for Business accounts?</span>
           <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
@@ -812,7 +1393,7 @@ export default function FeesPage() {
       </details>
 
       {/* 14. MFS Withdrawal Limits */}
-      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-[#E61C5D]/20 transition-all duration-300">
+      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-emerald-500/20 transition-all duration-300">
         <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
           <span className="font-bold text-slate-900">Is there a limit for withdrawals to Mobile Financial Services?</span>
           <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
