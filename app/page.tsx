@@ -461,17 +461,6 @@ export default function FeesPage() {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(15,23,42,0.08)_1px,transparent_0)] dark:bg-[radial-gradient(circle_at_1px_1px,rgba(148,163,184,0.14)_1px,transparent_0)] [background-size:22px_22px] opacity-40"></div>
           <div className="absolute inset-0 [mask-image:radial-gradient(ellipse_at_center,black_48%,transparent_86%)] bg-[linear-gradient(to_right,rgba(16,185,129,0.18)_1px,transparent_1px),linear-gradient(to_bottom,rgba(20,184,166,0.14)_1px,transparent_1px)] [background-size:68px_68px] opacity-45"></div>
 
-          <motion.div
-            className="absolute -top-20 left-[14%] w-px h-[140%] bg-gradient-to-b from-transparent via-emerald-400/50 to-transparent -rotate-12"
-            animate={shouldReduceMotion ? undefined : { y: [0, 22, 0], opacity: [0.3, 0.75, 0.3] }}
-            transition={shouldReduceMotion ? undefined : { duration: 7, repeat: Infinity, ease: "easeInOut" }}
-          />
-          <motion.div
-            className="absolute -top-24 right-[17%] w-px h-[145%] bg-gradient-to-b from-transparent via-teal-400/45 to-transparent rotate-12"
-            animate={shouldReduceMotion ? undefined : { y: [0, -20, 0], opacity: [0.25, 0.65, 0.25] }}
-            transition={shouldReduceMotion ? undefined : { duration: 8, repeat: Infinity, ease: "easeInOut" }}
-          />
-
           {heroParticles.map((particle, i) => (
             <motion.div
               key={i}
