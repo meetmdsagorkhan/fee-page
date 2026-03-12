@@ -239,4 +239,108 @@
   .delay-300 {
     animation-delay: 300ms;
   }
+
+  /* Animated gradient border */
+  @keyframes gradient-xy {
+    0% {
+      background-size: 200% 200%;
+      background-position: 0% 50%;
+    }
+    25% {
+      background-size: 200% 200%;
+      background-position: 100% 50%;
+    }
+    50% {
+      background-size: 200% 200%;
+      background-position: 100% 100%;
+    }
+    75% {
+      background-size: 200% 200%;
+      background-position: 0% 100%;
+    }
+    100% {
+      background-size: 200% 200%;
+      background-position: 0% 50%;
+    }
+  }
+
+  .animate-gradient-xy {
+    animation: gradient-xy 4s ease infinite;
+  }
+
+  /* Galaxy/Sparkle animations */
+  @keyframes flip {
+    to {
+      rotate: 360deg;
+    }
+  }
+
+  @keyframes rotate {
+    to {
+      transform: rotate(90deg);
+    }
+  }
+
+  /* Modern gradient animation for Instant Calculation badge */
+  @property --bg-angle {
+    inherits: false;
+    initial-value: 0deg;
+    syntax: "<angle>";
+  }
+
+  @keyframes spin-gradient {
+    to {
+      --bg-angle: 360deg;
+    }
+  }
+
+  .instant-calc-badge {
+    /* Add the animation */
+    animation: spin-gradient 1.5s infinite linear;
+    
+    /* Create gradient border using background-origin */
+    background:
+      /* Background gradient for padding box (inner area) */
+      linear-gradient(
+        to bottom,
+        rgb(16, 185, 129),
+        rgb(16, 185, 129)
+      )
+      padding-box,
+      /* Animated gradient for border box (outer area) */
+      conic-gradient(
+        from var(--bg-angle),
+        #8b5cf6 0deg,
+        #a78bfa 120deg,
+        #c084fc 240deg,
+        #8b5cf6 360deg
+      )
+      border-box;
+    
+    /* Transparent border to show gradient */
+    border: 3px solid transparent;
+    
+    /* Badge styling */
+    border-radius: 9999px;
+    padding: 0.5rem 1.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0.25rem 0.5rem rgba(139, 92, 246, 0.3);
+    color: white;
+    font-weight: 700;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .instant-calc-badge:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0.5rem 1rem rgba(139, 92, 246, 0.4);
+  }
+
+  .instant-calc-badge svg {
+    width: 1rem;
+    height: 1rem;
+  }
 }

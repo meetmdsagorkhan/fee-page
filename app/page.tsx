@@ -62,8 +62,24 @@ const FeeSubsection = ({ title, children, id }: any) => (
 
 const AccountTypeNavigation = ({ activeAccountType, setActiveAccountType }: any) => {
   const accountTypes = [
-    { id: 'personal', label: 'Personal' },
-    { id: 'business', label: 'Business' }
+    { 
+      id: 'personal', 
+      label: 'Personal',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        </svg>
+      )
+    },
+    { 
+      id: 'business', 
+      label: 'Business',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+        </svg>
+      )
+    }
   ];
 
   return (
@@ -74,12 +90,13 @@ const AccountTypeNavigation = ({ activeAccountType, setActiveAccountType }: any)
             <button
               key={account.id}
               onClick={() => setActiveAccountType(account.id)}
-              className={`px-8 py-3 text-sm font-semibold rounded-xl transition-all duration-200 ${
+              className={`px-8 py-3 text-sm font-semibold rounded-xl transition-all duration-200 flex items-center gap-2 ${
                 activeAccountType === account.id
                   ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/25'
                   : 'text-slate-600 hover:text-emerald-500 hover:bg-slate-50'
               }`}
             >
+              {account.icon}
               {account.label}
             </button>
           ))}
@@ -234,7 +251,7 @@ const useFeeCalculator = () => {
       'card-shipping': '$5.00 per shipment',
       'maintenance': calculatorAccount === 'personal' ? '$10 per 6 months' : 'FREE',
       'additional-account': calculatorAccount === 'personal' ? '$10 per 6 months' : '$10 per 6 months',
-      'incoming-ach': '$0.25 per transaction (first 10 free monthly)',
+      'incoming-ach': calculatorAccount === 'business' ? 'FREE for business accounts' : '$0.25 per transaction (first 10 free monthly)',
       'outgoing-ach': '1% of transaction amount (max $5.00)',
       'incoming-wire': '$10.00 per transaction',
       'outgoing-wire': '$10.00 + 1% of amount (max $20.00)',
@@ -276,9 +293,13 @@ const useFeeCalculator = () => {
           return Math.max(0, (amount - freeAccounts) * 10);
         }
       case 'incoming-ach':
-        // $0.25 per transaction (first 10 free)
-        const achFee = Math.max(0, (transactions - 10) * 0.25);
-        return achFee;
+        // Business accounts: FREE, Personal accounts: $0.25 per transaction (first 10 free)
+        if (calculatorAccount === 'business') {
+          return 0; // Completely FREE for business accounts
+        } else {
+          const achFee = Math.max(0, (transactions - 10) * 0.25);
+          return achFee;
+        }
       case 'outgoing-ach':
         // 1% with $5 max per transaction
         const achOutFee = Math.min(5, amount * 0.01);
@@ -363,7 +384,7 @@ const useFeeCalculator = () => {
       'virtual-card': calculatorAccount === 'personal' ? 'First virtual card is FREE for personal accounts only. Business accounts get first 50 cards FREE.' : 'First 50 virtual cards are FREE for business accounts.',
       'maintenance': calculatorAccount === 'business' ? 'FREE for up to 5 USD accounts for business accounts.' : 'FREE for personal accounts if you bring $5,000/year in deposits.',
       'additional-account': calculatorAccount === 'personal' ? 'Additional USD accounts cost $10 each for personal accounts.' : 'First 5 USD accounts are FREE for business accounts.',
-      'incoming-ach': 'First 10 transactions are FREE every month for all account types.',
+      'incoming-ach': calculatorAccount === 'business' ? 'FREE for all business account transactions.' : 'First 10 transactions are FREE every month for personal accounts.',
       'outgoing-ach': 'Maximum fee is $5.00 regardless of transaction amount.',
       'outgoing-wire': 'Maximum fee is $20.00 regardless of transaction amount.',
       'p2p': 'Business to Business transfers only.'
@@ -415,7 +436,7 @@ export default function FeesPage() {
   }, [activeAccountType]);
 
   return (
-    <div className="min-h-screen bg-slate-50 font-['Inter',_'DM_Sans'] text-slate-900 selection:bg-emerald-500 selection:text-white">
+    <div className="min-h-screen bg-slate-50 font-inter text-slate-900 selection:bg-emerald-500 selection:text-white">
       
       {/* --- HEADER --- */}
       <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
@@ -501,6 +522,12 @@ export default function FeesPage() {
           
           {/* Grid pattern */}
           <div className="absolute inset-0 bg-grid-pattern opacity-30"></div>
+          
+          {/* Currency background elements */}
+          <div className="absolute top-10 left-10 text-emerald-300/40 text-9xl font-bold rotate-12 select-none pointer-events-none">$</div>
+          <div className="absolute bottom-20 right-10 text-teal-300/40 text-8xl font-bold -rotate-12 select-none pointer-events-none">৳</div>
+          <div className="absolute top-1/2 right-1/4 text-emerald-300/30 text-6xl font-bold rotate-45 select-none pointer-events-none">$</div>
+          <div className="absolute top-32 right-32 text-teal-300/30 text-7xl font-bold -rotate-8 select-none pointer-events-none">৳</div>
         </div>
 
         <div className="relative z-10 w-full py-12 md:py-16 lg:py-20 lg:px-0 px-8">
@@ -526,7 +553,7 @@ export default function FeesPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
               >
-                Fees
+                Fees & Pricing
               </motion.h1>
               <motion.div 
                 className="text-base md:text-lg lg:text-xl 2xl:text-2xl mb-6 md:mb-8 2xl:max-w-2xl lg:max-w-xl max-w-sm leading-relaxed text-slate-600 mt-2 md:mt-4"
@@ -557,253 +584,332 @@ export default function FeesPage() {
             
             {/* Right Column - Fee Calculator */}
             <motion.div 
-              className="flex-1 lg:max-w-md"
+              className="flex-1 lg:max-w-xl"
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
             >
-              <div className="bg-gradient-to-br from-white to-emerald-50/30 rounded-3xl border border-emerald-200/50 shadow-2xl p-8 backdrop-blur-sm relative overflow-hidden">
-                {/* Animated Background Elements */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl animate-pulse"></div>
-                <div className="absolute bottom-0 left-0 w-24 h-24 bg-blue-500/10 rounded-full blur-xl animate-pulse delay-75"></div>
-                
-                {/* Header */}
-                <motion.div 
-                  className="relative z-10"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
-                >
-                  <div className="flex items-center gap-3 mb-6">
-                    <motion.div 
-                      className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/25"
-                      whileHover={{ scale: 1.1, rotate: 5 }}
-                      transition={{ type: "spring", stiffness: 300 }}
+              {/* Eye-catching badge with modern gradient animation */}
+              <motion.div
+                className="mb-4 text-center"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, delay: 0.5, ease: "easeOut" }}
+              >
+                <div className="instant-calc-badge">
+                  <span className="flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    INSTANT CALCULATION
+                  </span>
+                </div>
+              </motion.div>
+
+              <div className="relative">
+                {/* Main calculator container with border animation */}
+                <div className="relative bg-gradient-to-br from-white via-emerald-50/20 to-teal-50/30 rounded-3xl border-2 border-emerald-200/50 shadow-2xl p-8 backdrop-blur-sm overflow-hidden">
+                  {/* Animated galaxy border effect - constrained to border */}
+                  <div className="absolute inset-0 rounded-3xl overflow-hidden pointer-events-none">
+                    {/* Spark effect in border area */}
+                    <div 
+                      className="absolute inset-0 rounded-3xl"
+                      style={{
+                        mask: 'linear-gradient(white, transparent 50%)',
+                        animation: 'flip 6s infinite steps(2, end)',
+                      }}
                     >
-                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                      </svg>
-                    </motion.div>
-                    <div>
-                      <h3 className="text-xl font-bold text-slate-900">Fee Calculator</h3>
-                      <p className="text-sm text-slate-600">Calculate your costs instantly</p>
+                      <div 
+                        className="absolute w-[200%] aspect-square top-0 left-1/2 -translate-x-1/2 -translate-y-[15%]"
+                        style={{
+                          background: 'conic-gradient(from 0deg, transparent 0deg, transparent 320deg, #10b981 340deg, #14b8a6 350deg, #06b6d4 360deg)',
+                          animation: 'rotate 4s linear infinite both',
+                          opacity: 1,
+                          filter: 'blur(1px)',
+                        }}
+                      />
                     </div>
+                    
+                    {/* Border cutout to reveal only border area */}
+                    <div className="absolute inset-[2px] rounded-3xl bg-white"></div>
                   </div>
-                </motion.div>
-                
-                <div className="space-y-5 relative z-10">
-                  {/* Account Type Selection */}
-                  <motion.div
+                  {/* Enhanced Animated Background Elements */}
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-500/20 to-teal-500/20 rounded-full blur-3xl animate-pulse"></div>
+                  <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full blur-2xl animate-pulse delay-75"></div>
+                  <div className="absolute top-1/2 left-1/2 w-20 h-20 bg-gradient-to-br from-pink-500/10 to-orange-500/10 rounded-full blur-xl animate-pulse delay-150"></div>
+                  
+                  {/* Floating sparkles */}
+                  {[...Array(6)].map((_, i) => (
+                    <motion.div
+                      key={i}
+                      className="absolute w-1 h-1 bg-emerald-400 rounded-full"
+                      style={{
+                        left: `${Math.random() * 100}%`,
+                        top: `${Math.random() * 100}%`,
+                      }}
+                      animate={{
+                        y: [0, -20, 0],
+                        x: [0, Math.random() * 10 - 5, 0],
+                        opacity: [0.3, 1, 0.3],
+                        scale: [1, 1.5, 1],
+                      }}
+                      transition={{
+                        duration: 2 + Math.random() * 2,
+                        repeat: Infinity,
+                        delay: Math.random() * 2,
+                        ease: "easeInOut"
+                      }}
+                    />
+                  ))}
+                  
+                  {/* Header */}
+                  <motion.div 
+                    className="relative z-10"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.8, ease: "easeOut" }}
+                    transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
                   >
-                    <label className="block text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
-                      <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                      Account Type
-                    </label>
-                    <div className="flex gap-3">
-                      <motion.button
-                        onClick={() => setCalculatorAccount('personal')}
-                        className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all duration-300 transform ${
-                          calculatorAccount === 'personal'
-                            ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/30 ring-2 ring-emerald-500/50'
-                            : 'bg-slate-100 text-slate-700 hover:bg-slate-200 hover:shadow-md'
-                        }`}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
+                    <div className="flex items-center gap-3 mb-6">
+                      <motion.div 
+                        className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/30"
+                        whileHover={{ scale: 1.1, rotate: 5 }}
+                        transition={{ type: "spring", stiffness: 300 }}
                       >
-                        <span className="flex items-center justify-center gap-2">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                          </svg>
-                          Personal
-                        </span>
-                      </motion.button>
-                      <motion.button
-                        onClick={() => setCalculatorAccount('business')}
-                        className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all duration-300 transform ${
-                          calculatorAccount === 'business'
-                            ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/30 ring-2 ring-emerald-500/50'
-                            : 'bg-slate-100 text-slate-700 hover:bg-slate-200 hover:shadow-md'
-                        }`}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                      >
-                        <span className="flex items-center justify-center gap-2">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                          </svg>
-                          Business
-                        </span>
-                      </motion.button>
+                        <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
+                      </motion.div>
+                      <div>
+                        <h3 className="text-xl font-bold text-slate-900">Fee Calculator</h3>
+                        <p className="text-sm text-slate-600">Calculate your costs instantly</p>
+                      </div>
                     </div>
                   </motion.div>
-
-                  {/* Service Type Selection */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 1.0, ease: "easeOut" }}
-                  >
-                    <label className="block text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
-                      <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                      </svg>
-                      Service Type
-                    </label>
-                    <motion.select
-                      value={calculatorService}
-                      onChange={(e) => setCalculatorService(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 text-sm bg-white/80 backdrop-blur-sm hover:bg-white"
-                      whileFocus={{ scale: 1.02 }}
+                  
+                  <div className="space-y-5 relative z-10">
+                    {/* Account Type Selection */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6, delay: 0.8, ease: "easeOut" }}
                     >
-                      <option value="">Select a service</option>
-                      <optgroup label="💳 Card Services">
-                        <option value="virtual-card">Virtual Card</option>
-                        <option value="physical-card">Physical Card (includes shipping)</option>
-                      </optgroup>
-                      <optgroup label="🏦 Account Services">
-                        <option value="maintenance">Maintenance Fee</option>
-                        <option value="additional-account">Additional USD Account</option>
-                      </optgroup>
-                      <optgroup label="💸 Money Transfers">
-                        <option value="incoming-ach">Incoming ACH</option>
-                        <option value="outgoing-ach">Outgoing ACH</option>
-                        <option value="incoming-wire">Incoming Wire (Domestic)</option>
-                        <option value="outgoing-wire">Outgoing Wire (Domestic)</option>
-                        <option value="incoming-wire-intl">Incoming Wire (International)</option>
-                        <option value="p2p">P2P Transfer</option>
-                        <option value="third-party">Third-Party Payment</option>
-                        <option value="cross-border">Cross-Border Payment</option>
-                        <option value="usd-to-bdt">USD to BDT Conversion</option>
-                        <option value="atm">ATM Withdrawal</option>
-                      </optgroup>
-                    </motion.select>
-                  </motion.div>
+                      <label className="block text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                        <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        Account Type
+                      </label>
+                      <div className="flex gap-3">
+                        <motion.button
+                          onClick={() => setCalculatorAccount('personal')}
+                          className={`flex-1 px-5 py-3 rounded-xl font-bold text-base transition-all duration-300 transform ${
+                            calculatorAccount === 'personal'
+                              ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-xl shadow-emerald-500/40 ring-2 ring-emerald-500/50 scale-105'
+                              : 'bg-slate-100 text-slate-700 hover:bg-slate-200 hover:shadow-lg'
+                          }`}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          <span className="flex items-center justify-center gap-2">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            Personal
+                          </span>
+                        </motion.button>
+                        <motion.button
+                          onClick={() => setCalculatorAccount('business')}
+                          className={`flex-1 px-5 py-3 rounded-xl font-bold text-base transition-all duration-300 transform ${
+                            calculatorAccount === 'business'
+                              ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-xl shadow-emerald-500/40 ring-2 ring-emerald-500/50 scale-105'
+                              : 'bg-slate-100 text-slate-700 hover:bg-slate-200 hover:shadow-lg'
+                          }`}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          <span className="flex items-center justify-center gap-2">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                            Business
+                          </span>
+                        </motion.button>
+                      </div>
+                    </motion.div>
 
-                  {/* Amount Input */}
-                  <AnimatePresence>
-                    {calculatorService && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.4, ease: "easeOut" }}
+                    {/* Service Type Selection */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6, delay: 1.0, ease: "easeOut" }}
+                    >
+                      <label className="block text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                        <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                        Service Type
+                      </label>
+                      <motion.select
+                        value={calculatorService}
+                        onChange={(e) => setCalculatorService(e.target.value)}
+                        className="w-full px-5 py-3 rounded-xl border-2 border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 text-sm bg-white/90 backdrop-blur-sm hover:bg-white font-medium"
+                        whileFocus={{ scale: 1.02 }}
                       >
-                        <label className="block text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
-                          <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          {getCalculatorLabel()}
-                        </label>
-                        <div className="relative">
-                          <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-medium">$</span>
+                        <option value="">Select a service</option>
+                        <optgroup label="💳 Card Services">
+                          <option value="virtual-card">Virtual Card</option>
+                          <option value="physical-card">Physical Card (includes shipping)</option>
+                        </optgroup>
+                        <optgroup label="🏦 Account Services">
+                          <option value="maintenance">Maintenance Fee</option>
+                          <option value="additional-account">Additional USD Account</option>
+                        </optgroup>
+                        <optgroup label="💸 Money Transfers">
+                          <option value="incoming-ach">Incoming ACH</option>
+                          <option value="outgoing-ach">Outgoing ACH</option>
+                          <option value="incoming-wire">Incoming Wire (Domestic)</option>
+                          <option value="outgoing-wire">Outgoing Wire (Domestic)</option>
+                          <option value="incoming-wire-intl">Incoming Wire (International)</option>
+                          <option value="p2p">P2P Transfer</option>
+                          <option value="third-party">Third-Party Payment</option>
+                          <option value="cross-border">Cross-Border Payment</option>
+                          <option value="usd-to-bdt">USD to BDT Conversion</option>
+                          <option value="atm">ATM Withdrawal</option>
+                        </optgroup>
+                      </motion.select>
+                    </motion.div>
+
+                    {/* Amount Input */}
+                    <AnimatePresence>
+                      {calculatorService && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -20 }}
+                          transition={{ duration: 0.4, ease: "easeOut" }}
+                        >
+                          <label className="block text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                            <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            {getCalculatorLabel()}
+                          </label>
+                          <div className="relative">
+                            <span className="absolute left-5 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold text-base">$</span>
+                            <motion.input
+                              type="number"
+                              value={calculatorAmount}
+                              onChange={(e) => setCalculatorAmount(e.target.value)}
+                              placeholder="0.00"
+                              className="w-full pl-10 pr-5 py-3 rounded-xl border-2 border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 text-base bg-white/90 backdrop-blur-sm hover:bg-white font-medium"
+                              whileFocus={{ scale: 1.02 }}
+                            />
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
+                    {/* Transaction Count Input */}
+                    <AnimatePresence>
+                      {calculatorService && [
+                        'incoming-ach', 'outgoing-ach', 'incoming-wire', 'outgoing-wire', 
+                        'incoming-wire-intl', 'p2p', 'third-party', 'cross-border', 
+                        'usd-to-bdt', 'atm'
+                      ].includes(calculatorService) && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -20 }}
+                          transition={{ duration: 0.4, delay: 0.1, ease: "easeOut" }}
+                        >
+                          <label className="block text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                            <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                            Number of Transactions
+                          </label>
                           <motion.input
                             type="number"
-                            value={calculatorAmount}
-                            onChange={(e) => setCalculatorAmount(e.target.value)}
-                            placeholder="0.00"
-                            className="w-full pl-8 pr-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 text-sm bg-white/80 backdrop-blur-sm hover:bg-white"
+                            value={transactionCount}
+                            onChange={(e) => setTransactionCount(e.target.value)}
+                            placeholder="1"
+                            min="1"
+                            className="w-full px-5 py-3 rounded-xl border-2 border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 text-base bg-white/90 backdrop-blur-sm hover:bg-white font-medium"
                             whileFocus={{ scale: 1.02 }}
                           />
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  {/* Transaction Count Input */}
-                  <AnimatePresence>
-                    {calculatorService && [
-                      'incoming-ach', 'outgoing-ach', 'incoming-wire', 'outgoing-wire', 
-                      'incoming-wire-intl', 'p2p', 'third-party', 'cross-border', 
-                      'usd-to-bdt', 'atm'
-                    ].includes(calculatorService) && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.4, delay: 0.1, ease: "easeOut" }}
-                      >
-                        <label className="block text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
-                          <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                          </svg>
-                          Number of Transactions
-                        </label>
-                        <motion.input
-                          type="number"
-                          value={transactionCount}
-                          onChange={(e) => setTransactionCount(e.target.value)}
-                          placeholder="1"
-                          min="1"
-                          className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 text-sm bg-white/80 backdrop-blur-sm hover:bg-white"
-                          whileFocus={{ scale: 1.02 }}
-                        />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                  
-                  {/* Results Section */}
-                  <AnimatePresence>
-                    {calculatorService && calculatorAmount && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.5, ease: "easeOut" }}
-                      >
-                        {getAccountLimits() ? (
-                          <div className="space-y-3">
-                            <div className="bg-red-50 border border-red-200 rounded-xl p-4 animate-pulse">
-                              <div className="flex items-center gap-2 mb-2">
-                                <svg className="w-5 h-5 text-red-500 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                                </svg>
-                                <span className="text-sm font-semibold text-red-700">Account Limit Exceeded</span>
-                              </div>
-                              <p className="text-xs text-red-600">{getFeeNote()}</p>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <span className="text-sm text-slate-600">Fee Rate:</span>
-                              <span className="text-sm font-semibold text-slate-900">{getFeeRate()}</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <span className="text-base font-bold text-slate-900">Total Fee:</span>
-                              <span className="text-xl font-bold text-emerald-500">
-                                ${calculateFee().toLocaleString()}
-                              </span>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="space-y-3">
-                            <div className="flex justify-between items-center py-3 border-b border-slate-200">
-                              <span className="text-sm text-slate-600">Fee Rate:</span>
-                              <span className="text-sm font-semibold text-slate-900">{getFeeRate()}</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <span className="text-base font-bold text-slate-900">Total Fee:</span>
-                              <span className="text-2xl font-bold bg-gradient-to-r from-emerald-500 to-emerald-600 bg-clip-text text-transparent">
-                                ${calculateFee().toLocaleString()}
-                              </span>
-                            </div>
-                            {getFeeNote() && (
-                              <div className="mt-3 p-3 bg-gradient-to-r from-emerald-50 to-emerald-100/50 rounded-lg border border-emerald-200/50">
-                                <p className="text-xs text-emerald-700 flex items-start gap-2">
-                                  <svg className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                    
+                    {/* Results Section */}
+                    <AnimatePresence>
+                      {calculatorService && calculatorAmount && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -20 }}
+                          transition={{ duration: 0.5, ease: "easeOut" }}
+                        >
+                          {getAccountLimits() ? (
+                            <div className="space-y-3">
+                              <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 animate-pulse">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <svg className="w-5 h-5 text-red-500 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
                                   </svg>
-                                  {getFeeNote()}
-                                </p>
+                                  <span className="text-sm font-bold text-red-700">Account Limit Exceeded</span>
+                                </div>
+                                <p className="text-xs text-red-600">{getFeeNote()}</p>
                               </div>
-                            )}
-                          </div>
-                        )}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm text-slate-600">Fee Rate:</span>
+                                <span className="text-sm font-bold text-slate-900">{getFeeRate()}</span>
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <span className="text-base font-bold text-slate-900">Total Fee:</span>
+                                <span className="text-xl font-bold text-emerald-500">
+                                  ${calculateFee().toLocaleString()}
+                                </span>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="space-y-3">
+                              <div className="flex justify-between items-center py-3 border-b-2 border-slate-200">
+                                <span className="text-sm text-slate-600">Fee Rate:</span>
+                                <span className="text-sm font-bold text-slate-900">{getFeeRate()}</span>
+                              </div>
+                              <motion.div 
+                                className="flex justify-between items-center"
+                                initial={{ scale: 0.95 }}
+                                animate={{ scale: 1 }}
+                                transition={{ type: "spring", stiffness: 300 }}
+                              >
+                                <span className="text-base font-bold text-slate-900">Total Fee:</span>
+                                <span className="text-2xl font-bold bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent">
+                                  ${calculateFee().toLocaleString()}
+                                </span>
+                              </motion.div>
+                              {getFeeNote() && (
+                                <motion.div 
+                                  className="mt-3 p-3 bg-gradient-to-r from-emerald-50 to-teal-50/50 rounded-xl border border-emerald-200/50"
+                                  initial={{ opacity: 0, y: 10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{ delay: 0.2 }}
+                                >
+                                  <p className="text-xs text-emerald-700 flex items-start gap-2">
+                                    <svg className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    {getFeeNote()}
+                                  </p>
+                                </motion.div>
+                              )}
+                            </div>
+                          )}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -1063,9 +1169,9 @@ export default function FeesPage() {
                 />
                 <FeeRow 
                   label="Incoming ACH - from Any Bank in the USA" 
-                  desc={<>First 10 transactions are <span className='text-emerald-500 font-bold'>FREE</span> every month.</>} 
-                  price="$0.25" 
-                  period="Per transaction"
+                  desc={<><span className='text-emerald-500 font-bold'>Totally FREE</span> for all business account transactions.</>} 
+                  price="FREE" 
+                  period=""
                 />
                 <FeeRow 
                   label="Incoming Wire (Domestic)" 
@@ -1214,198 +1320,657 @@ export default function FeesPage() {
       </section>
 
       {/* --- FAQ SECTION --- */}
-<section className="py-24 bg-white border-t border-slate-100">
-  <div className="container mx-auto px-6 max-w-3xl">
-    <div className="text-center mb-12">
-      <h2 className="text-3xl font-bold text-slate-900 mb-4">Common Questions</h2>
-      <p className="text-slate-500">Clarifications on our fee structure and account maintenance.</p>
-    </div>
+<section className="py-24 bg-gradient-to-br from-slate-50 via-white to-emerald-50/30 relative overflow-hidden">
+  {/* Background decorative elements */}
+  <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-emerald-500/10 to-teal-500/10 rounded-full blur-3xl"></div>
+  <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-full blur-2xl"></div>
+  
+  <div className="container mx-auto px-6 max-w-7xl relative z-10">
+    <motion.div 
+      className="text-center mb-16"
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.6 }}
+    >
+      <motion.div 
+        className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-6 py-3 rounded-full text-base font-bold mb-4 shadow-lg shadow-emerald-500/30"
+        initial={{ opacity: 0, scale: 0.8 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.2 }}
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        FREQUENTLY ASKED QUESTIONS
+      </motion.div>
+      <p className="text-slate-500 text-lg max-w-2xl mx-auto">Clarifications on our fee structure and account maintenance. Find answers to everything you need to know.</p>
+    </motion.div>
 
-    <div className="space-y-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       
       {/* 1. Maintenance Fee Billing */}
-      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-emerald-500/20 transition-all duration-300">
-        <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
-          <span className="font-bold text-slate-900">How is the maintenance fee billed?</span>
-          <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
+      <motion.details 
+        className="group bg-white/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+        initial={{ opacity: 0, x: -50 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.1 }}
+      >
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 transition-colors">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <span className="font-bold text-slate-900">How is the maintenance fee billed?</span>
+          </div>
+          <span className="transform group-open:rotate-180 transition-transform duration-300 text-emerald-500">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
-        <div className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-slate-100/50 pt-4">
-          The $10 maintenance fee covers your USD account maintenance for 6 months. It is automatically deducted from your balance at the start of each 6-month cycle.
-        </div>
-      </details>
+        <motion.div 
+          className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-emerald-100/50 pt-4"
+          initial={{ height: 0, opacity: 0 }}
+          whileInView={{ height: "auto", opacity: 1 }}
+          viewport={{ once: false }}
+        >
+          <strong>Personal Accounts:</strong> $10 maintenance fee covers your USD account for 6 months. <strong>Business Accounts:</strong> <span className="text-emerald-500 font-bold">FREE</span> for up to 5 USD accounts.
+        </motion.div>
+      </motion.details>
 
       {/* 2. Fee Waiver */}
-      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-emerald-500/20 transition-all duration-300">
-        <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
-          <span className="font-bold text-slate-900">How can I waive the maintenance fee?</span>
-          <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
+      <motion.details 
+        className="group bg-white/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+        initial={{ opacity: 0, x: 50 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.2 }}
+      >
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 transition-colors">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <span className="font-bold text-slate-900">How can I waive the maintenance fee?</span>
+          </div>
+          <span className="transform group-open:rotate-180 transition-transform duration-300 text-emerald-500">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
-        <div className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-slate-100/50 pt-4">
-          The maintenance fee is waived (FREE) if you bring in $5,000 or more in deposits per year. <a href="https://pay.priyo.com/fee-waiver" target="_blank" rel="noopener noreferrer" className="text-emerald-500 hover:text-emerald-600 underline font-bold">Learn more</a>
-        </div>
-      </details>
+        <motion.div 
+          className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-emerald-100/50 pt-4"
+          initial={{ height: 0, opacity: 0 }}
+          whileInView={{ height: "auto", opacity: 1 }}
+          viewport={{ once: false }}
+        >
+          Personal accounts get the maintenance fee waived (<span className="text-emerald-500 font-bold">FREE</span>) if you bring in $5,000 or more in deposits per year, <a href="https://pay.priyo.com/fee-waiver" target="_blank" rel="noopener noreferrer" className="text-emerald-500 hover:text-emerald-600 underline font-bold">Learn more</a>. Business accounts enjoy <span className="text-emerald-500 font-bold">FREE</span> maintenance for up to 5 USD accounts. 
+        </motion.div>
+      </motion.details>
 
       {/* 3. Virtual Cards */}
-      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-emerald-500/20 transition-all duration-300">
-        <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
-          <span className="font-bold text-slate-900">Is the Virtual Card really free?</span>
-          <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
+      <motion.details 
+        className="group bg-white/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+        initial={{ opacity: 0, x: -50 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.3 }}
+      >
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 transition-colors">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+              </svg>
+            </div>
+            <span className="font-bold text-slate-900">Is the Virtual Card really free?</span>
+          </div>
+          <span className="transform group-open:rotate-180 transition-transform duration-300 text-emerald-500">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
-        <div className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-slate-100/50 pt-4">
-          For personal accounts, your first virtual debit card is issued absolutely FREE. Any additional cards incur a one-time fee of $3.00 per card.
-        </div>
-      </details>
+        <motion.div 
+          className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-emerald-100/50 pt-4"
+          initial={{ height: 0, opacity: 0 }}
+          whileInView={{ height: "auto", opacity: 1 }}
+          viewport={{ once: false }}
+        >
+          <strong>Personal Accounts:</strong> First virtual card is <span className="text-emerald-500 font-bold">FREE</span>. <strong>Business Accounts:</strong> First 50 virtual cards are <span className="text-emerald-500 font-bold">FREE</span>. Additional cards beyond the free limit incur a one-time fee of $3.00 per card.
+        </motion.div>
+      </motion.details>
 
       {/* 4. Incoming ACH */}
-      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-emerald-500/20 transition-all duration-300">
-        <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
-          <span className="font-bold text-slate-900">Are there fees for incoming ACH transfers?</span>
-          <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
+      <motion.details 
+        className="group bg-white/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+        initial={{ opacity: 0, x: 50 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.4 }}
+      >
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 transition-colors">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+              </svg>
+            </div>
+            <span className="font-bold text-slate-900">Are there fees for incoming ACH transfers?</span>
+          </div>
+          <span className="transform group-open:rotate-180 transition-transform duration-300 text-emerald-500">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
-        <div className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-slate-100/50 pt-4">
-          We offer the first 10 incoming ACH transactions every month for FREE. After that, a fee of $0.25 applies per transaction.
-        </div>
-      </details>
+        <motion.div 
+          className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-emerald-100/50 pt-4"
+          initial={{ height: 0, opacity: 0 }}
+          whileInView={{ height: "auto", opacity: 1 }}
+          viewport={{ once: false }}
+        >
+          <strong>Business Accounts:</strong> Incoming ACH transfers are completely <span className="text-emerald-500 font-bold">FREE</span> with no transaction limits. <strong>Personal Accounts:</strong> First 10 transactions are <span className="text-emerald-500 font-bold">FREE</span> every month, then $0.25 per transaction.
+        </motion.div>
+      </motion.details>
 
       {/* 5. Wires */}
-      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-emerald-500/20 transition-all duration-300">
-        <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
-          <span className="font-bold text-slate-900">What are the fees for Wire transfers?</span>
-          <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
+      <motion.details 
+        className="group bg-white/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+        initial={{ opacity: 0, x: -50 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.5 }}
+      >
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 transition-colors">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+              </svg>
+            </div>
+            <span className="font-bold text-slate-900">What are the fees for Wire transfers?</span>
+          </div>
+          <span className="transform group-open:rotate-180 transition-transform duration-300 text-emerald-500">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
-        <div className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-slate-100/50 pt-4">
-          Incoming domestic wires are $10.00, and international SWIFT wires are $25.00 per transaction. Outgoing domestic wires are $10.00 plus a 1% fee.
-        </div>
-      </details>
+        <motion.div 
+          className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-emerald-100/50 pt-4"
+          initial={{ height: 0, opacity: 0 }}
+          whileInView={{ height: "auto", opacity: 1 }}
+          viewport={{ once: false }}
+        >
+          Incoming domestic wires are $10.00, and international SWIFT wires are $25.00 per transaction. Outgoing domestic wires are $10.00 plus 1% fee (maximum $20.00 per transaction).
+        </motion.div>
+      </motion.details>
 
       {/* 6. ATM Withdrawal */}
-      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-emerald-500/20 transition-all duration-300">
-        <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
-          <span className="font-bold text-slate-900">Are there fees for ATM withdrawals?</span>
-          <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
+      <motion.details 
+        className="group bg-white/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+        initial={{ opacity: 0, x: 50 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.6 }}
+      >
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 transition-colors">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </div>
+            <span className="font-bold text-slate-900">Are there fees for ATM withdrawals?</span>
+          </div>
+          <span className="transform group-open:rotate-180 transition-transform duration-300 text-emerald-500">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
-        <div className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-slate-100/50 pt-4">
-          Yes, ATM withdrawals globally incur a 1% fee, with a minimum charge of $3.00.
-        </div>
-      </details>
+        <motion.div 
+          className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-emerald-100/50 pt-4"
+          initial={{ height: 0, opacity: 0 }}
+          whileInView={{ height: "auto", opacity: 1 }}
+          viewport={{ once: false }}
+        >
+          Yes, ATM withdrawals globally incur a 1% fee, with a minimum charge of $3.00 per transaction. Maximum withdrawal limit is $500 per 24 hours for both Personal and Business accounts.
+        </motion.div>
+      </motion.details>
 
-      {/* 7. Business - Maintenance Fees */}
-      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-emerald-500/20 transition-all duration-300">
-        <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
-          <span className="font-bold text-slate-900">Are there maintenance fees for Business Accounts?</span>
-          <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
+      {/* 7. Additional USD Accounts */}
+      <motion.details 
+        className="group bg-white/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+        initial={{ opacity: 0, x: -50 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.7 }}
+      >
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 transition-colors">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+            </div>
+            <span className="font-bold text-slate-900">What are the fees for additional USD accounts?</span>
+          </div>
+          <span className="transform group-open:rotate-180 transition-transform duration-300 text-emerald-500">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
-        <div className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-slate-100/50 pt-4">
-          No. Business accounts enjoy a zero monthly maintenance fee for up to 2 USD accounts. It is absolutely FREE.
-        </div>
-      </details>
+        <motion.div 
+          className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-emerald-100/50 pt-4"
+          initial={{ height: 0, opacity: 0 }}
+          whileInView={{ height: "auto", opacity: 1 }}
+          viewport={{ once: false }}
+        >
+          <strong>Personal Accounts:</strong> Additional USD accounts cost $10 each (no free accounts). <strong>Business Accounts:</strong> First 5 USD accounts are <span className="text-emerald-500 font-bold">FREE</span>, then $10 per additional account. Maximum 10 USD accounts for personal, 5 for business.
+        </motion.div>
+      </motion.details>
 
       {/* 8. Business - Virtual Cards */}
-      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-emerald-500/20 transition-all duration-300">
-        <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
-          <span className="font-bold text-slate-900">How many Virtual Cards can a business have?</span>
-          <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
+      <motion.details 
+        className="group bg-white/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+        initial={{ opacity: 0, x: 50 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.8 }}
+      >
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 transition-colors">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+              </svg>
+            </div>
+            <span className="font-bold text-slate-900">How many Virtual Cards can a business have?</span>
+          </div>
+          <span className="transform group-open:rotate-180 transition-transform duration-300 text-emerald-500">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
-        <div className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-slate-100/50 pt-4">
-          Business accounts can issue up to 20 virtual cards for FREE. Any cards issued beyond this limit incur a one-time fee of $3.00 per card.
-        </div>
-      </details>
+        <motion.div 
+          className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-emerald-100/50 pt-4"
+          initial={{ height: 0, opacity: 0 }}
+          whileInView={{ height: "auto", opacity: 1 }}
+          viewport={{ once: false }}
+        >
+          Business accounts can issue up to 50 virtual cards for <span className="text-emerald-500 font-bold">FREE</span>. Any cards issued beyond this limit incur a one-time fee of $3.00 per card. Maximum 1 physical card per USD account.
+        </motion.div>
+      </motion.details>
 
       {/* 9. Business - P2P Transfers */}
-      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-emerald-500/20 transition-all duration-300">
-        <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
-          <span className="font-bold text-slate-900">Can I use P2P transfers for my business?</span>
-          <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
+      <motion.details 
+        className="group bg-white/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+        initial={{ opacity: 0, x: -50 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.9 }}
+      >
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 transition-colors">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+            </div>
+            <span className="font-bold text-slate-900">Can I use P2P transfers for my business?</span>
+          </div>
+          <span className="transform group-open:rotate-180 transition-transform duration-300 text-emerald-500">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
-        <div className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-slate-100/50 pt-4">
-          Yes. Business-to-business P2P transfers are available for 1.00% per transaction (min. $1.00; max $1,000.00). Please note that these are strictly for Business-to-Business usage.
-        </div>
-      </details>
+        <motion.div 
+          className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-emerald-100/50 pt-4"
+          initial={{ height: 0, opacity: 0 }}
+          whileInView={{ height: "auto", opacity: 1 }}
+          viewport={{ once: false }}
+        >
+          Yes. Business-to-business P2P transfers are available for 1% per transaction (minimum $1.00; maximum $1,000.00). These are strictly for Business-to-Business usage only.
+        </motion.div>
+      </motion.details>
 
       {/* 10. Account Limits - Personal */}
-      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-emerald-500/20 transition-all duration-300">
-        <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
-          <span className="font-bold text-slate-900">How many USD accounts can I have with a Personal account?</span>
-          <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
+      <motion.details 
+        className="group bg-white/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+        initial={{ opacity: 0, x: 50 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: 1.0 }}
+      >
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 transition-colors">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+            </div>
+            <span className="font-bold text-slate-900">How many USD accounts can I have with a Personal account?</span>
+          </div>
+          <span className="transform group-open:rotate-180 transition-transform duration-300 text-emerald-500">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
-        <div className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-slate-100/50 pt-4">
-          With a Personal account, you can have up to 2 active USD accounts per profile. Each USD account can hold up to 2 virtual cards and 1 physical card.
-        </div>
-      </details>
+        <motion.div 
+          className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-emerald-100/50 pt-4"
+          initial={{ height: 0, opacity: 0 }}
+          whileInView={{ height: "auto", opacity: 1 }}
+          viewport={{ once: false }}
+        >
+          With a Personal account, you can have up to 10 active USD accounts per profile. Each USD account can hold up to 2 virtual cards and 1 physical card. P2P transfers limited to $1,000 per transaction.
+        </motion.div>
+      </motion.details>
 
       {/* 11. Account Limits - Business */}
-      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-emerald-500/20 transition-all duration-300">
-        <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
-          <span className="font-bold text-slate-900">How many USD accounts can I have with a Business account?</span>
-          <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
+      <motion.details 
+        className="group bg-white/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+        initial={{ opacity: 0, x: -50 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: 1.1 }}
+      >
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 transition-colors">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+            </div>
+            <span className="font-bold text-slate-900">How many USD accounts can I have with a Business account?</span>
+          </div>
+          <span className="transform group-open:rotate-180 transition-transform duration-300 text-emerald-500">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
-        <div className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-slate-100/50 pt-4">
-          With a Business account, you can have up to 2 active USD accounts per business. Each USD account can hold up to 20 virtual cards and 1 physical card, perfect for team management.
-        </div>
-      </details>
+        <motion.div 
+          className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-emerald-100/50 pt-4"
+          initial={{ height: 0, opacity: 0 }}
+          whileInView={{ height: "auto", opacity: 1 }}
+          viewport={{ once: false }}
+        >
+          With a Business account, you can have up to 5 active USD accounts per business. Each USD account can hold up to 50 virtual cards and 1 physical card, perfect for team management. P2P transfers limited to $10,000 per transaction.
+        </motion.div>
+      </motion.details>
 
-      {/* 12. Transaction Limits - Personal */}
-      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-emerald-500/20 transition-all duration-300">
-        <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
-          <span className="font-bold text-slate-900">What are the transaction limits for Personal accounts?</span>
-          <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
+      {/* 12. Physical Cards */}
+      <motion.details 
+        className="group bg-white/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+        initial={{ opacity: 0, x: 50 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: 1.2 }}
+      >
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 transition-colors">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+              </svg>
+            </div>
+            <span className="font-bold text-slate-900">What are the fees for Physical Cards?</span>
+          </div>
+          <span className="transform group-open:rotate-180 transition-transform duration-300 text-emerald-500">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
-        <div className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-slate-100/50 pt-4">
-          For Personal accounts: General withdrawals/transfers are limited to $1,000/day for accounts under 30 days old, and $4,000/day for accounts 30+ days old. Card transactions are limited to $1,000/day (max 10 transactions) for new accounts, and $3,000/day (max 30 transactions) for established accounts.
-        </div>
-      </details>
+        <motion.div 
+          className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-emerald-100/50 pt-4"
+          initial={{ height: 0, opacity: 0 }}
+          whileInView={{ height: "auto", opacity: 1 }}
+          viewport={{ once: false }}
+        >
+          Physical cards cost $19.95 per year plus $5.00 shipping (shipping is included in the fee). Maximum 1 physical card per USD account for both Personal and Business accounts.
+        </motion.div>
+      </motion.details>
 
-      {/* 13. Transaction Limits - Business */}
-      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-emerald-500/20 transition-all duration-300">
-        <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
-          <span className="font-bold text-slate-900">What are the transaction limits for Business accounts?</span>
-          <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
+      {/* 13. Cross-Border Payments */}
+      <motion.details 
+        className="group bg-white/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+        initial={{ opacity: 0, x: -50 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: 1.3 }}
+      >
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 transition-colors">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <span className="font-bold text-slate-900">What are the fees for cross-border payments?</span>
+          </div>
+          <span className="transform group-open:rotate-180 transition-transform duration-300 text-emerald-500">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
-        <div className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-slate-100/50 pt-4">
-          For Business accounts: General withdrawals/transfers are limited to $5,000/day for accounts under 30 days old, and $10,000/day for accounts 30+ days old. Card transactions are limited to $5,000/day (max 20 transactions) for new accounts, and $10,000/day (max 30 transactions) for established accounts.
-        </div>
-      </details>
+        <motion.div 
+          className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-emerald-100/50 pt-4"
+          initial={{ height: 0, opacity: 0 }}
+          whileInView={{ height: "auto", opacity: 1 }}
+          viewport={{ once: false }}
+        >
+          Cross-border payments incur a 1% fee per transaction. USD to BDT conversions also have a 1% fee with a minimum of $0.99 per transaction.
+        </motion.div>
+      </motion.details>
 
-      {/* 14. MFS Withdrawal Limits */}
-      <details className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-lg open:border-emerald-500/20 transition-all duration-300">
-        <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
-          <span className="font-bold text-slate-900">Is there a limit for withdrawals to Mobile Financial Services?</span>
-          <span className="transform group-open:rotate-180 transition-transform duration-300 text-slate-400">
+      {/* 14. Outgoing ACH */}
+      <motion.details 
+        className="group bg-white/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+        initial={{ opacity: 0, x: 50 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: 1.4 }}
+      >
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 transition-colors">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </div>
+            <span className="font-bold text-slate-900">What are the fees for outgoing ACH transfers?</span>
+          </div>
+          <span className="transform group-open:rotate-180 transition-transform duration-300 text-emerald-500">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
-        <div className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-slate-100/50 pt-4">
-          Yes. Withdrawals to Mobile Financial Services like bKash are limited to $500 per 24 hours for both Personal and Business accounts. This limit applies regardless of account age.
-        </div>
-      </details>
+        <motion.div 
+          className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-emerald-100/50 pt-4"
+          initial={{ height: 0, opacity: 0 }}
+          whileInView={{ height: "auto", opacity: 1 }}
+          viewport={{ once: false }}
+        >
+          Outgoing ACH transfers have a 1% fee with a maximum charge of $5.00 per transaction, regardless of the transaction amount.
+        </motion.div>
+      </motion.details>
 
     </div>
+  </div>
+</section>
+
+{/* --- WHY CHOOSE PRIYO PAY --- */}
+<section className="relative py-16 bg-gradient-to-b from-white to-emerald-50 overflow-hidden">
+  
+  {/* Decorative background elements */}
+  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    <div className="absolute top-0 left-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl"></div>
+    <div className="absolute bottom-0 right-0 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl"></div>
+  </div>
+
+  <div className="max-w-6xl mx-auto px-6 relative z-10">
+
+    {/* Header */}
+    <div className="text-center max-w-3xl mx-auto mb-12">
+      <motion.div
+        className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-5 py-2.5 rounded-full text-sm font-bold mb-6 shadow-lg shadow-emerald-500/30 border border-white/20"
+        initial={{ opacity: 0, scale: 0.8 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.2 }}
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+        </svg>
+        WHY CHOOSE PRIYO PAY
+      </motion.div>
+
+      <motion.h2 
+        className="text-4xl md:text-5xl font-extrabold text-slate-900 mt-2 leading-tight"
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.3 }}
+      >
+        Global banking
+        <span className="block bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent">
+          built for you
+        </span>
+      </motion.h2>
+    </div>
+
+    {/* Cards - 7 cards in a responsive grid */}
+    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-12">
+
+      {/* Card 1: FREE Virtual Cards */}
+      <motion.div
+        className="group bg-white border border-emerald-100 rounded-xl p-5 text-center shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.1 }}
+      >
+        <div className="w-12 h-12 mx-auto mb-3 flex items-center justify-center bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl shadow-md shadow-emerald-500/30 group-hover:scale-110 transition-transform">
+          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+          </svg>
+        </div>
+        <h3 className="font-semibold text-sm text-slate-900">FREE Virtual Cards</h3>
+      </motion.div>
+
+      {/* Card 2: Low Transfer Fees */}
+      <motion.div
+        className="group bg-white border border-emerald-100 rounded-xl p-5 text-center shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.2 }}
+      >
+        <div className="w-12 h-12 mx-auto mb-3 flex items-center justify-center bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl shadow-md shadow-teal-500/30 group-hover:scale-110 transition-transform">
+          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+          </svg>
+        </div>
+        <h3 className="font-semibold text-sm text-slate-900">Low Transfer Fees</h3>
+      </motion.div>
+
+      {/* Card 3: Global Transfers */}
+      <motion.div
+        className="group bg-white border border-emerald-100 rounded-xl p-5 text-center shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.3 }}
+      >
+        <div className="w-12 h-12 mx-auto mb-3 flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-md shadow-blue-500/30 group-hover:scale-110 transition-transform">
+          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <h3 className="font-semibold text-sm text-slate-900">Global Transfers</h3>
+      </motion.div>
+
+      {/* Card 4: FREE USD Accounts */}
+      <motion.div
+        className="group bg-white border border-emerald-100 rounded-xl p-5 text-center shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.4 }}
+      >
+        <div className="w-12 h-12 mx-auto mb-3 flex items-center justify-center bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-md shadow-purple-500/30 group-hover:scale-110 transition-transform">
+          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
+        </div>
+        <h3 className="font-semibold text-sm text-slate-900">FREE USD Accounts</h3>
+      </motion.div>
+
+      {/* Card 5: FDIC Insured */}
+      <motion.div
+        className="group bg-white border border-emerald-100 rounded-xl p-5 text-center shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.5 }}
+      >
+        <div className="w-12 h-12 mx-auto mb-3 flex items-center justify-center bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl shadow-md shadow-amber-500/30 group-hover:scale-110 transition-transform">
+          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+        </div>
+        <h3 className="font-semibold text-sm text-slate-900">FDIC Insured</h3>
+      </motion.div>
+
+      {/* Card 6: Transparent Pricing */}
+      <motion.div
+        className="group bg-white border border-emerald-100 rounded-xl p-5 text-center shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.6 }}
+      >
+        <div className="w-12 h-12 mx-auto mb-3 flex items-center justify-center bg-gradient-to-br from-rose-500 to-rose-600 rounded-xl shadow-md shadow-rose-500/30 group-hover:scale-110 transition-transform">
+          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+          </svg>
+        </div>
+        <h3 className="font-semibold text-sm text-slate-900">Transparent Pricing</h3>
+      </motion.div>
+
+      {/* Card 7: Local Support */}
+      <motion.div
+        className="group bg-white border border-emerald-100 rounded-xl p-5 text-center shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.7 }}
+      >
+        <div className="w-12 h-12 mx-auto mb-3 flex items-center justify-center bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-xl shadow-md shadow-cyan-500/30 group-hover:scale-110 transition-transform">
+          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+          </svg>
+        </div>
+        <h3 className="font-semibold text-sm text-slate-900">Local Support</h3>
+      </motion.div>
+
+    </div>
+
+    {/* CTA Button */}
+    <motion.div
+      className="text-center"
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: 0.7 }}
+    >
+      <Link
+        href="https://pay.priyo.com/get-started"
+        target="_blank"
+        className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-8 py-4 rounded-xl font-bold text-base hover:from-emerald-600 hover:to-teal-700 transition-all duration-300 shadow-xl shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:-translate-y-0.5"
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2h14a2 2 0 002-2v-5M16 12h5M16 12a2 2 0 100 4h5"/>
+        </svg>
+        Open Your Free Account
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+        </svg>
+      </Link>
+      <p className="text-slate-500 mt-4 text-sm">
+        No credit check • No minimum deposit • 100% online
+      </p>
+    </motion.div>
+
   </div>
 </section>
 
