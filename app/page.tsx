@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
@@ -10,6 +10,19 @@ const SUB_NAV_ITEMS = [
   { id: 'send-money-payments', label: 'Payments & Transfers' },
   { id: 'additional-resources', label: 'Additional Resources' },
   { id: 'limits', label: 'Account & Usage Limits' },
+];
+
+const TRANSACTION_AMOUNT_SERVICES = [
+  'incoming-ach',
+  'outgoing-ach',
+  'incoming-wire',
+  'outgoing-wire',
+  'incoming-wire-intl',
+  'p2p',
+  'third-party',
+  'cross-border',
+  'usd-to-bdt',
+  'atm',
 ];
 
 // ----------------------------------------------------------------------
@@ -217,11 +230,17 @@ const useFeeCalculator = () => {
       'maintenance': calculatorAccount === 'personal' ? '$10 per 6 months' : 'FREE',
       'additional-account': calculatorAccount === 'personal' ? '$10 per 6 months' : '$10 per 6 months',
       'incoming-ach': calculatorAccount === 'business' ? 'FREE for business accounts' : '$0.25 per transaction (first 10 free monthly)',
-      'outgoing-ach': '1% of transaction amount (max $5.00)',
+      'outgoing-ach': calculatorAccount === 'business'
+        ? '1% of transaction amount (max $5.00)'
+        : '1% of transaction amount',
       'incoming-wire': '$10.00 per transaction',
-      'outgoing-wire': '$10.00 + 1% of amount (max $20.00)',
+      'outgoing-wire': calculatorAccount === 'business'
+        ? '$10.00 + 1% of amount (max $20.00)'
+        : '$10.00 + 1% of amount',
       'incoming-wire-intl': '$25.00 per transaction',
-      'p2p': '1% of transaction amount (min $1.00, max $1,000)',
+      'p2p': calculatorAccount === 'personal'
+        ? '1% of transaction amount (min $1.00, max $1,000 transfer)'
+        : '1% of transaction amount (min $1.00, max $10,000 transfer)',
       'third-party': '2% of transaction amount (min $1.00)',
       'cross-border': '1% of transaction amount',
       'usd-to-bdt': '1% of transaction amount (min $0.99)',
@@ -266,15 +285,19 @@ const useFeeCalculator = () => {
           return achFee;
         }
       case 'outgoing-ach':
-        // 1% with $5 max per transaction
-        const achOutFee = Math.min(5, amount * 0.01);
+        // Business has a $5 cap; Personal uses 1% without cap.
+        const achOutFee = calculatorAccount === 'business'
+          ? Math.min(5, amount * 0.01)
+          : amount * 0.01;
         return achOutFee * transactions;
       case 'incoming-wire':
         // $10 per transaction
         return 10 * transactions;
       case 'outgoing-wire':
-        // $10 + 1% with $20 max per transaction
-        const wireFee = Math.min(20, 10 + (amount * 0.01));
+        // Business has a $20 cap; Personal uses $10 + 1% without cap.
+        const wireFee = calculatorAccount === 'business'
+          ? Math.min(20, 10 + (amount * 0.01))
+          : 10 + (amount * 0.01);
         return wireFee * transactions;
       case 'incoming-wire-intl':
         // $25 per transaction
@@ -311,14 +334,13 @@ const useFeeCalculator = () => {
       personal: {
         'virtual-card': { max: 2, current: 'Virtual Card', description: 'Maximum 2 virtual cards per USD account' },
         'physical-card': { max: 1, current: 'Physical Card', description: 'Maximum 1 physical card per USD account' },
-        'additional-account': { max: 10, current: 'USD Account', description: 'Maximum 10 USD accounts per profile' },
+        'additional-account': { max: 2, current: 'USD Account', description: 'Maximum 2 USD accounts per profile' },
         'p2p': { max: 1000, current: 'P2P Transfer', description: 'Maximum $1,000 per P2P transaction' },
         'atm': { max: 500, current: 'ATM Withdrawal', description: 'Maximum $500 per 24 hours for withdrawals to MFS' }
       },
       business: {
         'virtual-card': { max: 50, current: 'Virtual Card', description: 'Maximum 50 virtual cards per USD account' },
         'physical-card': { max: 1, current: 'Physical Card', description: 'Maximum 1 physical card per USD account' },
-        'additional-account': { max: 5, current: 'USD Account', description: 'Maximum 5 USD accounts per business' },
         'p2p': { max: 10000, current: 'P2P Transfer', description: 'Maximum $10,000 per P2P transaction' },
         'atm': { max: 500, current: 'ATM Withdrawal', description: 'Maximum $500 per 24 hours for withdrawals to MFS' }
       }
@@ -342,7 +364,7 @@ const useFeeCalculator = () => {
   const getFeeNote = () => {
     const limitInfo = getAccountLimits();
     if (limitInfo) {
-      return `⚠️ Limit exceeded: ${limitInfo.description}. You requested ${limitInfo.current} but maximum is ${limitInfo.max}.`;
+      return `?? Limit exceeded: ${limitInfo.description}. You requested ${limitInfo.current} but maximum is ${limitInfo.max}.`;
     }
 
     const notes: Record<string, string> = {
@@ -350,9 +372,15 @@ const useFeeCalculator = () => {
       'maintenance': calculatorAccount === 'business' ? 'FREE for up to 5 USD accounts for business accounts.' : 'FREE for personal accounts if you bring $5,000/year in deposits.',
       'additional-account': calculatorAccount === 'personal' ? 'Additional USD accounts cost $10 each for personal accounts.' : 'First 5 USD accounts are FREE for business accounts.',
       'incoming-ach': calculatorAccount === 'business' ? 'FREE for all business account transactions.' : 'First 10 transactions are FREE every month for personal accounts.',
-      'outgoing-ach': 'Maximum fee is $5.00 regardless of transaction amount.',
-      'outgoing-wire': 'Maximum fee is $20.00 regardless of transaction amount.',
-      'p2p': 'Business to Business transfers only.'
+      'outgoing-ach': calculatorAccount === 'business'
+        ? 'Maximum fee is $5.00 regardless of transaction amount.'
+        : 'Outgoing ACH fee is 1% per transaction.',
+      'outgoing-wire': calculatorAccount === 'business'
+        ? 'Maximum fee is $20.00 regardless of transaction amount.'
+        : 'Outgoing domestic wire fee is $10.00 + 1% per transaction.',
+      'p2p': calculatorAccount === 'business'
+        ? 'Business-to-Business transfers only. Maximum $10,000 per transaction.'
+        : 'Maximum $1,000 per transaction for personal accounts.'
     };
     return notes[calculatorService] || '';
   };
@@ -416,6 +444,8 @@ export default function FeesPage() {
     getAccountLimits,
     getFeeNote
   } = useFeeCalculator();
+
+  const isTransactionAmountService = TRANSACTION_AMOUNT_SERVICES.includes(calculatorService);
 
   useEffect(() => {
     setActiveSection(`${activeAccountType}-maintenance-service-fees`);
@@ -739,13 +769,15 @@ export default function FeesPage() {
                             {getCalculatorLabel()}
                           </label>
                           <div className="relative">
-                            <span className="absolute left-5 top-1/2 transform -translate-y-1/2 text-slate-500 dark:text-slate-400 font-bold text-base">$</span>
+                            {isTransactionAmountService && (
+                              <span className="pointer-events-none absolute left-5 top-1/2 z-10 -translate-y-1/2 text-slate-500 dark:text-slate-400 font-bold text-base">$</span>
+                            )}
                             <motion.input
                               type="number"
                               value={calculatorAmount}
                               onChange={(e) => setCalculatorAmount(e.target.value)}
-                              placeholder="0.00"
-                              className="w-full pl-10 pr-5 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 text-base text-slate-900 dark:text-slate-100 bg-white/90 dark:bg-slate-800/80 backdrop-blur-sm hover:bg-white dark:hover:bg-slate-800 font-medium"
+                              placeholder={isTransactionAmountService ? "0.00" : "0"}
+                              className={`relative z-0 w-full pr-5 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 text-base text-slate-900 dark:text-slate-100 bg-white/90 dark:bg-slate-800/80 backdrop-blur-sm hover:bg-white dark:hover:bg-slate-800 font-medium ${isTransactionAmountService ? 'pl-10' : 'px-5'}`}
                               whileFocus={shouldReduceMotion ? undefined : { scale: 1.005 }}
                             />
                           </div>
@@ -755,11 +787,7 @@ export default function FeesPage() {
 
                     {/* Transaction Count Input */}
                     <AnimatePresence>
-                      {calculatorService && [
-                        'incoming-ach', 'outgoing-ach', 'incoming-wire', 'outgoing-wire', 
-                        'incoming-wire-intl', 'p2p', 'third-party', 'cross-border', 
-                        'usd-to-bdt', 'atm'
-                      ].includes(calculatorService) && (
+                      {calculatorService && isTransactionAmountService && (
                         <motion.div
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
@@ -904,7 +932,7 @@ export default function FeesPage() {
                 <FeeRow 
                   label="Maintenance Fee (BDT Account Only)" 
                   desc={<>Payable in every 12 months. <span className='text-emerald-500 font-bold'>FREE</span> for USD Account Holder.</>} 
-                  price="৳199.00" 
+                  price="?199.00" 
                   period="Yearly"
                 />
                 <FeeRow 
@@ -1006,7 +1034,7 @@ export default function FeesPage() {
 
               <FeeSubsection title="Additional Resources" id="personal-additional-resources">
                 <FeeRow 
-                  label="Additionl USD Accounts"
+                  label="Additional USD Accounts"
                   desc="Charged per additional account."  
                   price="$10.00" 
                   period="Every 6 months"
@@ -1089,7 +1117,7 @@ export default function FeesPage() {
                   label="Maintenance Fee" 
                   desc={<>Zero monthly fee. <span className='text-emerald-500 font-bold'>FREE</span> forever.</>}
                   price="FREE" 
-                  period="Upto 5 USD Accounts"
+                  period="Up to 5 USD Accounts"
                   
                 />
                 
@@ -1097,7 +1125,7 @@ export default function FeesPage() {
                   label="Virtual Card (Debit)" 
                   desc={<>Zero monthly fee. <span className='text-emerald-500 font-bold'>FREE</span> forever.</>}
                   price="FREE" 
-                  period="Upto 50 Cards"
+                  period="Up to 50 Cards"
                 />
                 <FeeRow 
                   label="Physical Card (Plastic)" 
@@ -1172,7 +1200,7 @@ export default function FeesPage() {
                 />
                 <FeeRow 
                   label="Payment to another Priyo Pay user (P2P)" 
-                  desc="Minimum Fee: $1.00. Maximum $1,000.00. Business to Business only" 
+                  desc="Minimum Fee: $1.00. Maximum $10,000.00. Business to Business only" 
                   price="1.00%" 
                   period="Per transaction"
                 />
@@ -1192,7 +1220,7 @@ export default function FeesPage() {
 
               <FeeSubsection title="Additional Resources" id="business-additional-resources">
                 <FeeRow 
-                  label="Additionl USD Accounts"
+                  label="Additional USD Accounts"
                   desc={<>Charged per additional account. First 5 accounts are <span className='text-emerald-500 font-bold'>FREE</span>.</>}
                   price="$10.00" 
                   period="Every 6 months"
@@ -1212,8 +1240,8 @@ export default function FeesPage() {
                 
                 <FeeRow 
                   label="USD Account" 
-                  desc="Maximum number of active USD accounts per business." 
-                  price="5" 
+                  desc="No maximum limit on active USD accounts per business." 
+                  price="No limit" 
                   period="Accounts"
                 />
                 <FeeRow 
@@ -1326,14 +1354,11 @@ export default function FeesPage() {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
-        <motion.div 
-          className="px-6 pb-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 pt-4"
-          initial={{ height: 0, opacity: 0 }}
-          whileInView={{ height: "auto", opacity: 1 }}
-          viewport={{ once: false }}
-        >
+        <div className="grid transition-[grid-template-rows] duration-300 ease-out [grid-template-rows:0fr] group-open:[grid-template-rows:1fr]">
+          <div className="px-6 pb-6 pt-4 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 overflow-hidden">
           <strong>Personal Accounts:</strong> $10 maintenance fee covers your USD account for 6 months. <strong>Business Accounts:</strong> <span className="text-emerald-500 font-bold">FREE</span> for up to 5 USD accounts.
-        </motion.div>
+        </div>
+        </div>
       </motion.details>
 
       {/* 2. Fee Waiver */}
@@ -1357,14 +1382,11 @@ export default function FeesPage() {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
-        <motion.div 
-          className="px-6 pb-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 pt-4"
-          initial={{ height: 0, opacity: 0 }}
-          whileInView={{ height: "auto", opacity: 1 }}
-          viewport={{ once: false }}
-        >
-          Personal accounts get the maintenance fee waived (<span className="text-emerald-500 font-bold">FREE</span>) if you bring in $5,000 or more in deposits per year, <a href="https://pay.priyo.com/fee-waiver" target="_blank" rel="noopener noreferrer" className="text-emerald-500 hover:text-emerald-600 underline font-bold">Learn more</a>. Business accounts enjoy <span className="text-emerald-500 font-bold">FREE</span> maintenance for up to 5 USD accounts. 
-        </motion.div>
+        <div className="grid transition-[grid-template-rows] duration-300 ease-out [grid-template-rows:0fr] group-open:[grid-template-rows:1fr]">
+          <div className="px-6 pb-6 pt-4 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 overflow-hidden">
+          <strong>Personal Accounts:</strong> The maintenance fee is waived (<span className="text-emerald-500 font-bold">FREE</span>) if you bring in $5,000 or more in deposits per year, <a href="https://pay.priyo.com/fee-waiver" target="_blank" rel="noopener noreferrer" className="text-emerald-500 hover:text-emerald-600 underline font-bold">Learn more</a>. <strong>Business Accounts:</strong> Maintenance is <span className="text-emerald-500 font-bold">FREE</span> for up to 5 USD accounts.
+        </div>
+        </div>
       </motion.details>
 
       {/* 3. Virtual Cards */}
@@ -1388,14 +1410,11 @@ export default function FeesPage() {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
-        <motion.div 
-          className="px-6 pb-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 pt-4"
-          initial={{ height: 0, opacity: 0 }}
-          whileInView={{ height: "auto", opacity: 1 }}
-          viewport={{ once: false }}
-        >
+        <div className="grid transition-[grid-template-rows] duration-300 ease-out [grid-template-rows:0fr] group-open:[grid-template-rows:1fr]">
+          <div className="px-6 pb-6 pt-4 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 overflow-hidden">
           <strong>Personal Accounts:</strong> First virtual card is <span className="text-emerald-500 font-bold">FREE</span>. <strong>Business Accounts:</strong> First 50 virtual cards are <span className="text-emerald-500 font-bold">FREE</span>. Additional cards beyond the free limit incur a one-time fee of $3.00 per card.
-        </motion.div>
+        </div>
+        </div>
       </motion.details>
 
       {/* 4. Incoming ACH */}
@@ -1419,14 +1438,11 @@ export default function FeesPage() {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
-        <motion.div 
-          className="px-6 pb-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 pt-4"
-          initial={{ height: 0, opacity: 0 }}
-          whileInView={{ height: "auto", opacity: 1 }}
-          viewport={{ once: false }}
-        >
+        <div className="grid transition-[grid-template-rows] duration-300 ease-out [grid-template-rows:0fr] group-open:[grid-template-rows:1fr]">
+          <div className="px-6 pb-6 pt-4 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 overflow-hidden">
           <strong>Business Accounts:</strong> Incoming ACH transfers are completely <span className="text-emerald-500 font-bold">FREE</span> with no transaction limits. <strong>Personal Accounts:</strong> First 10 transactions are <span className="text-emerald-500 font-bold">FREE</span> every month, then $0.25 per transaction.
-        </motion.div>
+        </div>
+        </div>
       </motion.details>
 
       {/* 5. Wires */}
@@ -1450,14 +1466,11 @@ export default function FeesPage() {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
-        <motion.div 
-          className="px-6 pb-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 pt-4"
-          initial={{ height: 0, opacity: 0 }}
-          whileInView={{ height: "auto", opacity: 1 }}
-          viewport={{ once: false }}
-        >
-          Incoming domestic wires are $10.00, and international SWIFT wires are $25.00 per transaction. Outgoing domestic wires are $10.00 plus 1% fee (maximum $20.00 per transaction).
-        </motion.div>
+        <div className="grid transition-[grid-template-rows] duration-300 ease-out [grid-template-rows:0fr] group-open:[grid-template-rows:1fr]">
+          <div className="px-6 pb-6 pt-4 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 overflow-hidden">
+          <strong>Personal &amp; Business Accounts:</strong> Incoming domestic wires are $10.00 per transaction, and incoming international SWIFT wires are $25.00 per transaction. <strong>Personal Accounts:</strong> Outgoing domestic wires are $10.00 plus 1% per transaction. <strong>Business Accounts:</strong> Outgoing domestic wires are $10.00 plus 1% per transaction (maximum $20.00 per transaction).
+        </div>
+        </div>
       </motion.details>
 
       {/* 6. ATM Withdrawal */}
@@ -1481,14 +1494,11 @@ export default function FeesPage() {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
-        <motion.div 
-          className="px-6 pb-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 pt-4"
-          initial={{ height: 0, opacity: 0 }}
-          whileInView={{ height: "auto", opacity: 1 }}
-          viewport={{ once: false }}
-        >
-          Yes, ATM withdrawals globally incur a 1% fee, with a minimum charge of $3.00 per transaction. Maximum withdrawal limit is $500 per 24 hours for both Personal and Business accounts.
-        </motion.div>
+        <div className="grid transition-[grid-template-rows] duration-300 ease-out [grid-template-rows:0fr] group-open:[grid-template-rows:1fr]">
+          <div className="px-6 pb-6 pt-4 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 overflow-hidden">
+          <strong>Personal &amp; Business Accounts:</strong> ATM withdrawals globally incur a 1% fee, with a minimum charge of $3.00 per transaction. Maximum withdrawal limit is $500 per 24 hours.
+        </div>
+        </div>
       </motion.details>
 
       {/* 7. Additional USD Accounts */}
@@ -1512,14 +1522,11 @@ export default function FeesPage() {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
-        <motion.div 
-          className="px-6 pb-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 pt-4"
-          initial={{ height: 0, opacity: 0 }}
-          whileInView={{ height: "auto", opacity: 1 }}
-          viewport={{ once: false }}
-        >
-          <strong>Personal Accounts:</strong> Additional USD accounts cost $10 each (no free accounts). <strong>Business Accounts:</strong> First 5 USD accounts are <span className="text-emerald-500 font-bold">FREE</span>, then $10 per additional account. Maximum 10 USD accounts for personal, 5 for business.
-        </motion.div>
+        <div className="grid transition-[grid-template-rows] duration-300 ease-out [grid-template-rows:0fr] group-open:[grid-template-rows:1fr]">
+          <div className="px-6 pb-6 pt-4 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 overflow-hidden">
+          <strong>Personal Accounts:</strong> Additional USD accounts cost $10 every 6 months per additional account (no free accounts), with a maximum of 2 USD accounts per profile. <strong>Business Accounts:</strong> First 5 USD accounts are <span className="text-emerald-500 font-bold">FREE</span>, then $10 every 6 months per additional account, with no maximum account limit.
+        </div>
+        </div>
       </motion.details>
 
       {/* 8. Business - Virtual Cards */}
@@ -1543,14 +1550,11 @@ export default function FeesPage() {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
-        <motion.div 
-          className="px-6 pb-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 pt-4"
-          initial={{ height: 0, opacity: 0 }}
-          whileInView={{ height: "auto", opacity: 1 }}
-          viewport={{ once: false }}
-        >
-          Business accounts can issue up to 50 virtual cards for <span className="text-emerald-500 font-bold">FREE</span>. Any cards issued beyond this limit incur a one-time fee of $3.00 per card. Maximum 1 physical card per USD account.
-        </motion.div>
+        <div className="grid transition-[grid-template-rows] duration-300 ease-out [grid-template-rows:0fr] group-open:[grid-template-rows:1fr]">
+          <div className="px-6 pb-6 pt-4 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 overflow-hidden">
+          <strong>Business Accounts:</strong> You can issue up to 50 virtual cards for <span className="text-emerald-500 font-bold">FREE</span>. Any cards issued beyond this limit incur a one-time fee of $3.00 per card. Maximum 1 physical card per USD account.
+        </div>
+        </div>
       </motion.details>
 
       {/* 9. Business - P2P Transfers */}
@@ -1574,14 +1578,11 @@ export default function FeesPage() {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
-        <motion.div 
-          className="px-6 pb-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 pt-4"
-          initial={{ height: 0, opacity: 0 }}
-          whileInView={{ height: "auto", opacity: 1 }}
-          viewport={{ once: false }}
-        >
-          Yes. Business-to-business P2P transfers are available for 1% per transaction (minimum $1.00; maximum $1,000.00). These are strictly for Business-to-Business usage only.
-        </motion.div>
+        <div className="grid transition-[grid-template-rows] duration-300 ease-out [grid-template-rows:0fr] group-open:[grid-template-rows:1fr]">
+          <div className="px-6 pb-6 pt-4 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 overflow-hidden">
+          <strong>Business Accounts:</strong> Business-to-business P2P transfers are available for 1% per transaction (minimum $1.00; maximum $10,000.00). These are strictly for Business-to-Business usage only.
+        </div>
+        </div>
       </motion.details>
 
       {/* 10. Account Limits - Personal */}
@@ -1605,14 +1606,11 @@ export default function FeesPage() {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
-        <motion.div 
-          className="px-6 pb-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 pt-4"
-          initial={{ height: 0, opacity: 0 }}
-          whileInView={{ height: "auto", opacity: 1 }}
-          viewport={{ once: false }}
-        >
-          With a Personal account, you can have up to 10 active USD accounts per profile. Each USD account can hold up to 2 virtual cards and 1 physical card. P2P transfers limited to $1,000 per transaction.
-        </motion.div>
+        <div className="grid transition-[grid-template-rows] duration-300 ease-out [grid-template-rows:0fr] group-open:[grid-template-rows:1fr]">
+          <div className="px-6 pb-6 pt-4 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 overflow-hidden">
+          With a Personal account, you can have up to 2 active USD accounts per profile. Each USD account can hold up to 2 virtual cards and 1 physical card. P2P transfers are limited to $1,000 per transaction.
+        </div>
+        </div>
       </motion.details>
 
       {/* 11. Account Limits - Business */}
@@ -1636,14 +1634,11 @@ export default function FeesPage() {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
-        <motion.div 
-          className="px-6 pb-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 pt-4"
-          initial={{ height: 0, opacity: 0 }}
-          whileInView={{ height: "auto", opacity: 1 }}
-          viewport={{ once: false }}
-        >
-          With a Business account, you can have up to 5 active USD accounts per business. Each USD account can hold up to 50 virtual cards and 1 physical card, perfect for team management. P2P transfers limited to $10,000 per transaction.
-        </motion.div>
+        <div className="grid transition-[grid-template-rows] duration-300 ease-out [grid-template-rows:0fr] group-open:[grid-template-rows:1fr]">
+          <div className="px-6 pb-6 pt-4 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 overflow-hidden">
+          With a Business account, there is no maximum limit on active USD accounts. Each USD account can hold up to 50 virtual cards and 1 physical card, perfect for team management. P2P transfers are limited to $10,000 per transaction.
+        </div>
+        </div>
       </motion.details>
 
       {/* 12. Physical Cards */}
@@ -1667,14 +1662,11 @@ export default function FeesPage() {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
-        <motion.div 
-          className="px-6 pb-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 pt-4"
-          initial={{ height: 0, opacity: 0 }}
-          whileInView={{ height: "auto", opacity: 1 }}
-          viewport={{ once: false }}
-        >
-          Physical cards cost $19.95 per year plus $5.00 shipping (shipping is included in the fee). Maximum 1 physical card per USD account for both Personal and Business accounts.
-        </motion.div>
+        <div className="grid transition-[grid-template-rows] duration-300 ease-out [grid-template-rows:0fr] group-open:[grid-template-rows:1fr]">
+          <div className="px-6 pb-6 pt-4 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 overflow-hidden">
+          <strong>Personal &amp; Business Accounts:</strong> Physical cards cost $19.95 per year, and shipping is charged separately at $5.00 per shipment. Maximum 1 physical card per USD account.
+        </div>
+        </div>
       </motion.details>
 
       {/* 13. Cross-Border Payments */}
@@ -1698,14 +1690,11 @@ export default function FeesPage() {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
-        <motion.div 
-          className="px-6 pb-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 pt-4"
-          initial={{ height: 0, opacity: 0 }}
-          whileInView={{ height: "auto", opacity: 1 }}
-          viewport={{ once: false }}
-        >
-          Cross-border payments incur a 1% fee per transaction. USD to BDT conversions also have a 1% fee with a minimum of $0.99 per transaction.
-        </motion.div>
+        <div className="grid transition-[grid-template-rows] duration-300 ease-out [grid-template-rows:0fr] group-open:[grid-template-rows:1fr]">
+          <div className="px-6 pb-6 pt-4 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 overflow-hidden">
+          <strong>Personal &amp; Business Accounts:</strong> Cross-border payments incur a 1% fee per transaction. USD to BDT conversions also have a 1% fee with a minimum of $0.99 per transaction.
+        </div>
+        </div>
       </motion.details>
 
       {/* 14. Outgoing ACH */}
@@ -1729,14 +1718,11 @@ export default function FeesPage() {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
-        <motion.div 
-          className="px-6 pb-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 pt-4"
-          initial={{ height: 0, opacity: 0 }}
-          whileInView={{ height: "auto", opacity: 1 }}
-          viewport={{ once: false }}
-        >
-          Outgoing ACH transfers have a 1% fee with a maximum charge of $5.00 per transaction, regardless of the transaction amount.
-        </motion.div>
+        <div className="grid transition-[grid-template-rows] duration-300 ease-out [grid-template-rows:0fr] group-open:[grid-template-rows:1fr]">
+          <div className="px-6 pb-6 pt-4 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 overflow-hidden">
+          <strong>Personal Accounts:</strong> Outgoing ACH transfers have a 1% fee per transaction. <strong>Business Accounts:</strong> Outgoing ACH transfers have a 1% fee with a maximum charge of $5.00 per transaction.
+        </div>
+        </div>
       </motion.details>
 
     </div>
@@ -2024,6 +2010,13 @@ export default function FeesPage() {
     </div>
   );
 }
+
+
+
+
+
+
+
 
 
 

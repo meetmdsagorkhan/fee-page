@@ -692,9 +692,6 @@ video {
 .-top-12 {
   top: -3rem;
 }
-.-top-20 {
-  top: -5rem;
-}
 .-top-24 {
   top: -6rem;
 }
@@ -716,17 +713,11 @@ video {
 .left-5 {
   left: 1.25rem;
 }
-.left-\[14\%\] {
-  left: 14%;
-}
 .right-10 {
   right: 2.5rem;
 }
 .right-4 {
   right: 1rem;
-}
-.right-\[17\%\] {
-  right: 17%;
 }
 .top-0 {
   top: 0px;
@@ -751,6 +742,9 @@ video {
 }
 .z-50 {
   z-index: 50;
+}
+.z-0 {
+  z-index: 0;
 }
 .mx-auto {
   margin-left: auto;
@@ -843,12 +837,6 @@ video {
 .h-8 {
   height: 2rem;
 }
-.h-\[140\%\] {
-  height: 140%;
-}
-.h-\[145\%\] {
-  height: 145%;
-}
 .h-\[18rem\] {
   height: 18rem;
 }
@@ -928,9 +916,6 @@ video {
 .w-full {
   width: 100%;
 }
-.w-px {
-  width: 1px;
-}
 .max-w-2xl {
   max-width: 42rem;
 }
@@ -970,14 +955,6 @@ video {
 }
 .-translate-y-1\/2 {
   --tw-translate-y: -50%;
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-}
-.-rotate-12 {
-  --tw-rotate: -12deg;
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-}
-.rotate-12 {
-  --tw-rotate: 12deg;
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 .scale-105 {
@@ -1262,11 +1239,6 @@ video {
   --tw-gradient-to: rgb(20 184 166 / 0) var(--tw-gradient-to-position);
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
-.from-transparent {
-  --tw-gradient-from: transparent var(--tw-gradient-from-position);
-  --tw-gradient-to: rgb(0 0 0 / 0) var(--tw-gradient-to-position);
-  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
-}
 .from-white {
   --tw-gradient-from: #fff var(--tw-gradient-from-position);
   --tw-gradient-to: rgb(255 255 255 / 0) var(--tw-gradient-to-position);
@@ -1282,17 +1254,9 @@ video {
   --tw-gradient-to: rgb(255 255 255 / 0) var(--tw-gradient-to-position);
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
-.via-emerald-400\/50 {
-  --tw-gradient-to: rgb(52 211 153 / 0)  var(--tw-gradient-to-position);
-  --tw-gradient-stops: var(--tw-gradient-from), rgb(52 211 153 / 0.5) var(--tw-gradient-via-position), var(--tw-gradient-to);
-}
 .via-emerald-50\/20 {
   --tw-gradient-to: rgb(236 253 245 / 0)  var(--tw-gradient-to-position);
   --tw-gradient-stops: var(--tw-gradient-from), rgb(236 253 245 / 0.2) var(--tw-gradient-via-position), var(--tw-gradient-to);
-}
-.via-teal-400\/45 {
-  --tw-gradient-to: rgb(45 212 191 / 0)  var(--tw-gradient-to-position);
-  --tw-gradient-stops: var(--tw-gradient-from), rgb(45 212 191 / 0.45) var(--tw-gradient-via-position), var(--tw-gradient-to);
 }
 .via-transparent {
   --tw-gradient-to: rgb(0 0 0 / 0)  var(--tw-gradient-to-position);
@@ -1340,9 +1304,6 @@ video {
 }
 .to-teal-600 {
   --tw-gradient-to: #0d9488 var(--tw-gradient-to-position);
-}
-.to-transparent {
-  --tw-gradient-to: transparent var(--tw-gradient-to-position);
 }
 .to-white\/60 {
   --tw-gradient-to: rgb(255 255 255 / 0.6) var(--tw-gradient-to-position);
@@ -1713,6 +1674,11 @@ video {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }
+.transition-\[grid-template-rows\] {
+  transition-property: grid-template-rows;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
 .transition-all {
   transition-property: all;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
@@ -1741,6 +1707,9 @@ video {
 }
 .duration-500 {
   transition-duration: 500ms;
+}
+.ease-out {
+  transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
 }
 .reveal {
     animation: reveal 0.6s ease-out forwards;
@@ -1879,6 +1848,9 @@ video {
 }
 .\[background-size\:72px_72px\] {
   background-size: 72px 72px;
+}
+.\[grid-template-rows\:0fr\] {
+  grid-template-rows: 0fr;
 }
 .\[mask-image\:radial-gradient\(ellipse_at_center\2c black_48\%\2c transparent_86\%\)\] {
   -webkit-mask-image: radial-gradient(ellipse at center,black 48%,transparent 86%);
@@ -2046,6 +2018,10 @@ video {
 .group[open] .group-open\:rotate-180 {
   --tw-rotate: 180deg;
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+
+.group[open] .group-open\:\[grid-template-rows\:1fr\] {
+  grid-template-rows: 1fr;
 }
 
 .group:hover .group-hover\:scale-110 {
