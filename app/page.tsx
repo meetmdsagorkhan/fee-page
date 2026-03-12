@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import Link from 'next/link';
 
 const SUB_NAV_ITEMS = [
@@ -18,9 +18,9 @@ const SUB_NAV_ITEMS = [
 
 const Badge = ({ children, color = 'slate' }: { children: React.ReactNode, color?: 'slate' | 'emerald' | 'pink' }) => {
   const styles = {
-    slate: 'bg-slate-100 text-slate-600 border-slate-200',
-    emerald: 'bg-emerald-50 text-emerald-600 border-emerald-100',
-    pink: 'bg-[#E61C5D]/5 text-[#E61C5D] border-[#E61C5D]/10',
+    slate: 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700',
+    emerald: 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20',
+    pink: 'bg-[#E61C5D]/5 text-[#E61C5D] border-[#E61C5D]/10 dark:bg-[#E61C5D]/10 dark:text-[#ff6b96] dark:border-[#E61C5D]/20',
   };
   
   return (
@@ -34,25 +34,25 @@ const FeeRow = ({ label, desc, price, period, isHighlight = false }: any) => (
   <div className="flex flex-col sm:flex-row sm:items-center justify-between py-5 gap-4 group">
     <div className="flex-1">
       <div className="flex items-center gap-3">
-        <span className="text-sm font-bold text-slate-900 group-hover:text-emerald-500 transition-colors">
+        <span className="text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-emerald-500 transition-colors">
           {label}
         </span>
       </div>
-      {desc && <p className="text-xs text-slate-500 mt-1 leading-relaxed max-w-sm">{desc}</p>}
+      {desc && <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed max-w-sm">{desc}</p>}
     </div>
     
     <div className="text-left sm:text-right shrink-0">
-      <div className={`text-base font-bold ${price === 'FREE' || price === '$0.00' ? 'text-emerald-500' : 'text-slate-900'}`}>
+      <div className={`text-base font-bold ${price === 'FREE' || price === '$0.00' ? 'text-emerald-500' : 'text-slate-900 dark:text-slate-100'}`}>
         {price}
       </div>
-      {period && <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mt-0.5">{period}</div>}
+      {period && <div className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wide mt-0.5">{period}</div>}
     </div>
   </div>
 );
 
 const FeeSubsection = ({ title, children, id }: any) => (
   <div className="mb-8" id={id}>
-    <h4 className="text-lg font-bold text-center text-emerald-500 mb-4 pb-2 border-b border-slate-200">{title}</h4>
+    <h4 className="text-lg font-bold text-center text-emerald-500 mb-4 pb-2 border-b border-slate-200 dark:border-slate-700">{title}</h4>
     <div className="space-y-1">
       {children}
     </div>
@@ -83,17 +83,17 @@ const AccountTypeNavigation = ({ activeAccountType, setActiveAccountType }: any)
   ];
 
   return (
-    <div className="sticky top-[68px] z-40 bg-gradient-to-b from-white/90 to-white/60 backdrop-blur-lg border-b border-white/20 shadow-lg rounded-2xl">
-      <div className="container mx-auto px-6">
-        <div className="flex items-center justify-center gap-8 py-4">
+    <div className="sticky top-[64px] sm:top-[68px] z-40 bg-gradient-to-b from-white/90 to-white/60 dark:from-slate-900/90 dark:to-slate-900/60 backdrop-blur-lg border-b border-white/20 dark:border-slate-700/60 shadow-lg rounded-2xl">
+      <div className="container mx-auto px-4 sm:px-6">
+        <div className="flex items-center justify-center gap-2 sm:gap-8 py-3 sm:py-4">
           {accountTypes.map((account) => (
             <button
               key={account.id}
               onClick={() => setActiveAccountType(account.id)}
-              className={`px-8 py-3 text-sm font-semibold rounded-xl transition-all duration-200 flex items-center gap-2 ${
+              className={`px-4 sm:px-8 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold rounded-xl transition-all duration-200 flex items-center gap-2 ${
                 activeAccountType === account.id
                   ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/25'
-                  : 'text-slate-600 hover:text-emerald-500 hover:bg-slate-50'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-emerald-500 hover:bg-slate-50 dark:hover:bg-slate-800/70'
               }`}
             >
               {account.icon}
@@ -110,7 +110,7 @@ const SubNavigation = ({ activeSection, setActiveSection, accountType }: any) =>
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
-      const headerHeight = 145; // Sub Navigation sticky position (top-[145px])
+      const headerHeight = window.innerWidth >= 1024 ? 145 : 118;
       
       const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
       const offsetPosition = elementPosition - headerHeight - 10; // 10px extra spacing
@@ -157,19 +157,19 @@ const SubNavigation = ({ activeSection, setActiveSection, accountType }: any) =>
   }, [activeSection, accountType]);
 
   return (
-    <div className="sticky top-[145px] z-30 bg-gradient-to-b from-white/90 to-white/60 backdrop-blur-lg border-r border-white/20 shadow-lg rounded-r-2xl">
-      <div className="px-4 py-4">
-        <div className="flex flex-col items-start gap-2 overflow-y-auto">
+    <div className="lg:sticky lg:top-[145px] z-30 bg-gradient-to-b from-white/90 to-white/60 dark:from-slate-900/90 dark:to-slate-900/60 backdrop-blur-lg border border-white/20 dark:border-slate-700/60 lg:border-r lg:border-l-0 shadow-lg rounded-2xl lg:rounded-r-2xl lg:rounded-l-none">
+      <div className="px-3 sm:px-4 py-3 sm:py-4">
+        <div className="flex lg:flex-col items-start gap-2 overflow-x-auto lg:overflow-y-auto pb-1 lg:pb-0">
           {SUB_NAV_ITEMS.map((item) => {
             const sectionId = `${accountType}-${item.id}`;
             return (
               <button
                 key={item.id}
                 onClick={() => scrollToSection(sectionId)}
-                className={`px-4 py-3 text-xs font-medium whitespace-nowrap rounded-lg transition-all duration-200 text-left w-full ${
+                className={`px-3 sm:px-4 py-2.5 sm:py-3 text-xs font-medium whitespace-nowrap rounded-lg transition-all duration-200 text-left w-auto lg:w-full shrink-0 ${
                   activeSection === sectionId
                     ? 'bg-emerald-500 text-white shadow-md'
-                    : 'text-slate-600 hover:text-emerald-500 hover:bg-white'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-emerald-500 hover:bg-white dark:hover:bg-slate-800'
                 }`}
               >
                 {item.label}
@@ -183,8 +183,8 @@ const SubNavigation = ({ activeSection, setActiveSection, accountType }: any) =>
 };
 
 const AccountTypeSection = ({ children }: any) => (
-  <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden hover:shadow-xl hover:shadow-slate-200/40 transition-all duration-500">
-    <div className="p-8">
+  <div className="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden hover:shadow-xl hover:shadow-slate-200/40 dark:hover:shadow-slate-950/50 transition-all duration-500">
+    <div className="p-5 sm:p-8">
       {children}
     </div>
   </div>
@@ -413,6 +413,18 @@ const useFeeCalculator = () => {
 export default function FeesPage() {
   const [activeAccountType, setActiveAccountType] = useState('personal');
   const [activeSection, setActiveSection] = useState('personal-maintenance-service-fees');
+  const shouldReduceMotion = useReducedMotion();
+  const heroParticles = useMemo(
+    () =>
+      Array.from({ length: 6 }, (_, i) => ({
+        left: `${8 + ((i * 17) % 84)}%`,
+        top: `${12 + ((i * 23) % 76)}%`,
+        driftX: ((i % 2 === 0 ? 1 : -1) * (12 + i * 4)),
+        duration: 3.2 + i * 0.45,
+        delay: i * 0.28,
+      })),
+    []
+  );
   
   const {
     calculatorAccount,
@@ -436,16 +448,16 @@ export default function FeesPage() {
   }, [activeAccountType]);
 
   return (
-    <div className="min-h-screen bg-slate-50 font-inter text-slate-900 selection:bg-emerald-500 selection:text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-inter text-slate-900 dark:text-slate-100 selection:bg-emerald-500 selection:text-white">
       
       {/* --- HEADER --- */}
-      <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+      <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50">
+        <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-             <span className="text-xl font-extrabold text-slate-900 tracking-tight">Priyo Pay</span>
+             <span className="text-xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">Priyo Pay</span>
           </Link>
-          <div className="flex items-center gap-4">
-            <Link href="https://pay.priyo.com" className="bg-emerald-500 text-white px-5 py-2 rounded-xl font-semibold text-sm hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/10">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <Link href="https://pay.priyo.com/get-started" className="bg-emerald-500 text-white px-4 sm:px-5 py-2 rounded-xl font-semibold text-xs sm:text-sm hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/10">
                 Open Account
             </Link>
           </div>
@@ -453,18 +465,18 @@ export default function FeesPage() {
       </header>
 
       {/* --- HERO SECTION --- */}
-      <section className="relative overflow-hidden bg-white min-h-[80vh] flex items-center">
+      <section className="relative overflow-hidden bg-white dark:bg-slate-900 min-h-[72vh] sm:min-h-[80vh] flex items-center">
         {/* Enhanced Background Elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {/* Animated gradient orbs */}
           <motion.div 
             className="absolute top-0 right-0 w-[600px] h-[600px] bg-emerald-500/10 rounded-full blur-[100px]"
-            animate={{
+            animate={shouldReduceMotion ? undefined : {
               x: [0, 100, 0],
               y: [0, -50, 0],
               scale: [1, 1.2, 1],
             }}
-            transition={{
+            transition={shouldReduceMotion ? undefined : {
               duration: 8,
               repeat: Infinity,
               ease: "easeInOut"
@@ -472,12 +484,12 @@ export default function FeesPage() {
           />
           <motion.div 
             className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[80px]"
-            animate={{
+            animate={shouldReduceMotion ? undefined : {
               x: [0, -80, 0],
               y: [0, 60, 0],
               scale: [1, 0.8, 1],
             }}
-            transition={{
+            transition={shouldReduceMotion ? undefined : {
               duration: 10,
               repeat: Infinity,
               ease: "easeInOut"
@@ -485,12 +497,12 @@ export default function FeesPage() {
           />
           <motion.div 
             className="absolute top-1/2 left-1/2 w-[400px] h-[400px] bg-purple-500/5 rounded-full blur-[60px]"
-            animate={{
+            animate={shouldReduceMotion ? undefined : {
               x: [0, 120, -120, 0],
               y: [0, -80, 80, 0],
               scale: [1, 1.1, 0.9, 1],
             }}
-            transition={{
+            transition={shouldReduceMotion ? undefined : {
               duration: 15,
               repeat: Infinity,
               ease: "easeInOut"
@@ -498,23 +510,23 @@ export default function FeesPage() {
           />
           
           {/* Floating particles */}
-          {[...Array(6)].map((_, i) => (
+          {heroParticles.map((particle, i) => (
             <motion.div
               key={i}
               className="absolute w-2 h-2 bg-emerald-500/30 rounded-full"
               style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
+                left: particle.left,
+                top: particle.top,
               }}
-              animate={{
-                y: [0, -100, 0],
-                x: [0, Math.random() * 50 - 25, 0],
+              animate={shouldReduceMotion ? undefined : {
+                y: [0, -90, 0],
+                x: [0, particle.driftX, 0],
                 opacity: [0, 1, 0],
               }}
-              transition={{
-                duration: 3 + Math.random() * 2,
+              transition={shouldReduceMotion ? undefined : {
+                duration: particle.duration,
                 repeat: Infinity,
-                delay: Math.random() * 2,
+                delay: particle.delay,
                 ease: "easeInOut"
               }}
             />
@@ -530,7 +542,7 @@ export default function FeesPage() {
           <div className="absolute top-32 right-32 text-teal-300/30 text-7xl font-bold -rotate-8 select-none pointer-events-none">৳</div>
         </div>
 
-        <div className="relative z-10 w-full py-12 md:py-16 lg:py-20 lg:px-0 px-8">
+        <div className="relative z-10 w-full py-10 sm:py-12 md:py-16 lg:py-20 px-4 sm:px-6 lg:px-0">
           <div className="mx-auto flex flex-col lg:flex-row gap-12 relative z-10 max-w-5xl 2xl:max-w-[1500px] items-center">
             {/* Left Column - Hero Content */}
             <motion.div 
@@ -540,7 +552,7 @@ export default function FeesPage() {
               transition={{ duration: 0.8, ease: "easeOut" }}
             >
               <motion.div 
-                className="text-lg md:text-xl lg:text-2xl 2xl:text-3xl text-slate-600 tracking-tight mb-4"
+                className="text-lg md:text-xl lg:text-2xl 2xl:text-3xl text-slate-600 dark:text-slate-300 tracking-tight mb-4"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
@@ -548,7 +560,7 @@ export default function FeesPage() {
                 No Hidden Charges
               </motion.div>
               <motion.h1 
-                className="text-5xl lg:text-6xl 2xl:text-8xl max-w-4xl font-extrabold text-slate-900 tracking-tight mb-6"
+                className="text-4xl sm:text-5xl lg:text-6xl 2xl:text-8xl max-w-4xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight mb-6"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
@@ -556,7 +568,7 @@ export default function FeesPage() {
                 Fees & Pricing
               </motion.h1>
               <motion.div 
-                className="text-base md:text-lg lg:text-xl 2xl:text-2xl mb-6 md:mb-8 2xl:max-w-2xl lg:max-w-xl max-w-sm leading-relaxed text-slate-600 mt-2 md:mt-4"
+                className="text-base md:text-lg lg:text-xl 2xl:text-2xl mb-6 md:mb-8 2xl:max-w-2xl lg:max-w-xl max-w-sm leading-relaxed text-slate-600 dark:text-slate-300 mt-2 md:mt-4"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
@@ -567,13 +579,13 @@ export default function FeesPage() {
               </motion.div>
               <motion.a 
                 target="_blank" 
-                href="https://pay.priyo.com" 
+                href="https://pay.priyo.com/get-started" 
                 className="inline-flex items-center gap-2 bg-emerald-500 text-white px-6 py-3 rounded-xl font-semibold text-base hover:bg-emerald-600 hover:shadow-lg hover:shadow-emerald-500/25 transition-all duration-300 w-fit"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.8, ease: "easeOut" }}
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={shouldReduceMotion ? undefined : { scale: 1.05, y: -2 }}
+                whileTap={shouldReduceMotion ? undefined : { scale: 0.98 }}
               >
                 Open Account
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -608,7 +620,7 @@ export default function FeesPage() {
 
               <div className="relative">
                 {/* Main calculator container with border animation */}
-                <div className="relative bg-gradient-to-br from-white via-emerald-50/20 to-teal-50/30 rounded-3xl border-2 border-emerald-200/50 shadow-2xl p-8 backdrop-blur-sm overflow-hidden">
+                <div className="relative bg-gradient-to-br from-white via-emerald-50/20 to-teal-50/30 dark:from-slate-900 dark:via-emerald-950/20 dark:to-teal-950/20 rounded-3xl border-2 border-emerald-200/50 dark:border-emerald-800/40 shadow-2xl p-5 sm:p-8 backdrop-blur-sm overflow-hidden">
                   {/* Animated galaxy border effect - constrained to border */}
                   <div className="absolute inset-0 rounded-3xl overflow-hidden pointer-events-none">
                     {/* Spark effect in border area */}
@@ -631,7 +643,7 @@ export default function FeesPage() {
                     </div>
                     
                     {/* Border cutout to reveal only border area */}
-                    <div className="absolute inset-[2px] rounded-3xl bg-white"></div>
+                    <div className="absolute inset-[2px] rounded-3xl bg-white dark:bg-slate-900"></div>
                   </div>
                   {/* Enhanced Animated Background Elements */}
                   <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-500/20 to-teal-500/20 rounded-full blur-3xl animate-pulse"></div>
@@ -680,8 +692,8 @@ export default function FeesPage() {
                         </svg>
                       </motion.div>
                       <div>
-                        <h3 className="text-xl font-bold text-slate-900">Fee Calculator</h3>
-                        <p className="text-sm text-slate-600">Calculate your costs instantly</p>
+                        <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">Fee Calculator</h3>
+                        <p className="text-sm text-slate-600 dark:text-slate-300">Calculate your costs instantly</p>
                       </div>
                     </div>
                   </motion.div>
@@ -693,7 +705,7 @@ export default function FeesPage() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.6, delay: 0.8, ease: "easeOut" }}
                     >
-                      <label className="block text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                      <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-3 flex items-center gap-2">
                         <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
@@ -705,10 +717,10 @@ export default function FeesPage() {
                           className={`flex-1 px-5 py-3 rounded-xl font-bold text-base transition-all duration-300 transform ${
                             calculatorAccount === 'personal'
                               ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-xl shadow-emerald-500/40 ring-2 ring-emerald-500/50 scale-105'
-                              : 'bg-slate-100 text-slate-700 hover:bg-slate-200 hover:shadow-lg'
+                              : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 hover:shadow-lg'
                           }`}
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
+                          whileHover={shouldReduceMotion ? undefined : { scale: 1.05 }}
+                          whileTap={shouldReduceMotion ? undefined : { scale: 0.95 }}
                         >
                           <span className="flex items-center justify-center gap-2">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -722,10 +734,10 @@ export default function FeesPage() {
                           className={`flex-1 px-5 py-3 rounded-xl font-bold text-base transition-all duration-300 transform ${
                             calculatorAccount === 'business'
                               ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-xl shadow-emerald-500/40 ring-2 ring-emerald-500/50 scale-105'
-                              : 'bg-slate-100 text-slate-700 hover:bg-slate-200 hover:shadow-lg'
+                              : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 hover:shadow-lg'
                           }`}
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
+                          whileHover={shouldReduceMotion ? undefined : { scale: 1.05 }}
+                          whileTap={shouldReduceMotion ? undefined : { scale: 0.95 }}
                         >
                           <span className="flex items-center justify-center gap-2">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -743,7 +755,7 @@ export default function FeesPage() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.6, delay: 1.0, ease: "easeOut" }}
                     >
-                      <label className="block text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                      <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-3 flex items-center gap-2">
                         <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                         </svg>
@@ -752,7 +764,7 @@ export default function FeesPage() {
                       <motion.select
                         value={calculatorService}
                         onChange={(e) => setCalculatorService(e.target.value)}
-                        className="w-full px-5 py-3 rounded-xl border-2 border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 text-sm bg-white/90 backdrop-blur-sm hover:bg-white font-medium"
+                        className="w-full px-5 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 text-sm text-slate-900 dark:text-slate-100 bg-white/90 dark:bg-slate-800/80 backdrop-blur-sm hover:bg-white dark:hover:bg-slate-800 font-medium"
                         whileFocus={{ scale: 1.02 }}
                       >
                         <option value="">Select a service</option>
@@ -788,20 +800,20 @@ export default function FeesPage() {
                           exit={{ opacity: 0, y: -20 }}
                           transition={{ duration: 0.4, ease: "easeOut" }}
                         >
-                          <label className="block text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                          <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-3 flex items-center gap-2">
                             <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                             {getCalculatorLabel()}
                           </label>
                           <div className="relative">
-                            <span className="absolute left-5 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold text-base">$</span>
+                            <span className="absolute left-5 top-1/2 transform -translate-y-1/2 text-slate-500 dark:text-slate-400 font-bold text-base">$</span>
                             <motion.input
                               type="number"
                               value={calculatorAmount}
                               onChange={(e) => setCalculatorAmount(e.target.value)}
                               placeholder="0.00"
-                              className="w-full pl-10 pr-5 py-3 rounded-xl border-2 border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 text-base bg-white/90 backdrop-blur-sm hover:bg-white font-medium"
+                              className="w-full pl-10 pr-5 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 text-base text-slate-900 dark:text-slate-100 bg-white/90 dark:bg-slate-800/80 backdrop-blur-sm hover:bg-white dark:hover:bg-slate-800 font-medium"
                               whileFocus={{ scale: 1.02 }}
                             />
                           </div>
@@ -822,7 +834,7 @@ export default function FeesPage() {
                           exit={{ opacity: 0, y: -20 }}
                           transition={{ duration: 0.4, delay: 0.1, ease: "easeOut" }}
                         >
-                          <label className="block text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                          <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-3 flex items-center gap-2">
                             <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                             </svg>
@@ -834,7 +846,7 @@ export default function FeesPage() {
                             onChange={(e) => setTransactionCount(e.target.value)}
                             placeholder="1"
                             min="1"
-                            className="w-full px-5 py-3 rounded-xl border-2 border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 text-base bg-white/90 backdrop-blur-sm hover:bg-white font-medium"
+                            className="w-full px-5 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 text-base text-slate-900 dark:text-slate-100 bg-white/90 dark:bg-slate-800/80 backdrop-blur-sm hover:bg-white dark:hover:bg-slate-800 font-medium"
                             whileFocus={{ scale: 1.02 }}
                           />
                         </motion.div>
@@ -862,11 +874,11 @@ export default function FeesPage() {
                                 <p className="text-xs text-red-600">{getFeeNote()}</p>
                               </div>
                               <div className="flex justify-between items-center">
-                                <span className="text-sm text-slate-600">Fee Rate:</span>
-                                <span className="text-sm font-bold text-slate-900">{getFeeRate()}</span>
+                                <span className="text-sm text-slate-600 dark:text-slate-300">Fee Rate:</span>
+                                <span className="text-sm font-bold text-slate-900 dark:text-slate-100">{getFeeRate()}</span>
                               </div>
                               <div className="flex justify-between items-center">
-                                <span className="text-base font-bold text-slate-900">Total Fee:</span>
+                                <span className="text-base font-bold text-slate-900 dark:text-slate-100">Total Fee:</span>
                                 <span className="text-xl font-bold text-emerald-500">
                                   ${calculateFee().toLocaleString()}
                                 </span>
@@ -874,9 +886,9 @@ export default function FeesPage() {
                             </div>
                           ) : (
                             <div className="space-y-3">
-                              <div className="flex justify-between items-center py-3 border-b-2 border-slate-200">
-                                <span className="text-sm text-slate-600">Fee Rate:</span>
-                                <span className="text-sm font-bold text-slate-900">{getFeeRate()}</span>
+                              <div className="flex justify-between items-center py-3 border-b-2 border-slate-200 dark:border-slate-700">
+                                <span className="text-sm text-slate-600 dark:text-slate-300">Fee Rate:</span>
+                                <span className="text-sm font-bold text-slate-900 dark:text-slate-100">{getFeeRate()}</span>
                               </div>
                               <motion.div 
                                 className="flex justify-between items-center"
@@ -884,19 +896,19 @@ export default function FeesPage() {
                                 animate={{ scale: 1 }}
                                 transition={{ type: "spring", stiffness: 300 }}
                               >
-                                <span className="text-base font-bold text-slate-900">Total Fee:</span>
+                                <span className="text-base font-bold text-slate-900 dark:text-slate-100">Total Fee:</span>
                                 <span className="text-2xl font-bold bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent">
                                   ${calculateFee().toLocaleString()}
                                 </span>
                               </motion.div>
                               {getFeeNote() && (
                                 <motion.div 
-                                  className="mt-3 p-3 bg-gradient-to-r from-emerald-50 to-teal-50/50 rounded-xl border border-emerald-200/50"
+                                  className="mt-3 p-3 bg-gradient-to-r from-emerald-50 to-teal-50/50 dark:from-emerald-950/30 dark:to-teal-950/20 rounded-xl border border-emerald-200/50 dark:border-emerald-900/40"
                                   initial={{ opacity: 0, y: 10 }}
                                   animate={{ opacity: 1, y: 0 }}
                                   transition={{ delay: 0.2 }}
                                 >
-                                  <p className="text-xs text-emerald-700 flex items-start gap-2">
+                                  <p className="text-xs text-emerald-700 dark:text-emerald-300 flex items-start gap-2">
                                     <svg className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
@@ -918,7 +930,7 @@ export default function FeesPage() {
       </section>
 
       {/* --- DETAILED FEE LISTS --- */}
-      <section className="py-12 px-6">
+      <section className="py-12 px-4 sm:px-6">
         <div className="container mx-auto max-w-7xl">
           
           {/* Account Type Navigation */}
@@ -927,9 +939,9 @@ export default function FeesPage() {
             setActiveAccountType={setActiveAccountType} 
           />
           
-          <div className="flex gap-6 mt-6">
+          <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 mt-6">
             {/* Sub Navigation - Vertical Left Sidebar */}
-            <div className="w-64 flex-shrink-0">
+            <div className="w-full lg:w-64 flex-shrink-0">
               <SubNavigation 
                 activeSection={activeSection} 
                 setActiveSection={setActiveSection} 
@@ -939,6 +951,14 @@ export default function FeesPage() {
             
             {/* Main Content */}
             <div className="flex-1 max-w-4xl">
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={activeAccountType}
+                  initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
+                  animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+                  exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
+                >
               {/* Personal Account Section */}
               {activeAccountType === 'personal' && (
                 <AccountTypeSection>
@@ -1068,8 +1088,8 @@ export default function FeesPage() {
               </FeeSubsection>
 
               <FeeSubsection title="Account & Usage Limits" id="personal-limits">
-                <div className="border-b border-slate-200 pb-2 mb-4">
-                  <h5 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Resource Limits</h5>
+                <div className="border-b border-slate-200 dark:border-slate-700 pb-2 mb-4">
+                  <h5 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Resource Limits</h5>
                 </div>
                 
                 <FeeRow 
@@ -1091,8 +1111,8 @@ export default function FeesPage() {
                   period="Card"
                 />
                 
-                <div className="border-b border-slate-200 pb-2 mb-4 mt-6">
-                  <h5 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Transaction Limits</h5>
+                <div className="border-b border-slate-200 dark:border-slate-700 pb-2 mb-4 mt-6">
+                  <h5 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Transaction Limits</h5>
                 </div>
                 
                 <FeeRow 
@@ -1254,8 +1274,8 @@ export default function FeesPage() {
               </FeeSubsection>
 
               <FeeSubsection title="Account & Usage Limits" id="business-limits">
-                <div className="border-b border-slate-200 pb-2 mb-4">
-                  <h5 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Resource Account & Usage Limits</h5>
+                <div className="border-b border-slate-200 dark:border-slate-700 pb-2 mb-4">
+                  <h5 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Resource Account & Usage Limits</h5>
                 </div>
                 
                 <FeeRow 
@@ -1277,8 +1297,8 @@ export default function FeesPage() {
                   period="Card"
                 />
                 
-                <div className="border-b border-slate-200 pb-2 mb-4 mt-6">
-                  <h5 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Transaction Limits</h5>
+                <div className="border-b border-slate-200 dark:border-slate-700 pb-2 mb-4 mt-6">
+                  <h5 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Transaction Limits</h5>
                 </div>
                 
                 <FeeRow 
@@ -1314,18 +1334,20 @@ export default function FeesPage() {
               </FeeSubsection>
             </AccountTypeSection>
           )}
+                </motion.div>
+              </AnimatePresence>
             </div>
           </div>
         </div>
       </section>
 
       {/* --- FAQ SECTION --- */}
-<section className="py-24 bg-gradient-to-br from-slate-50 via-white to-emerald-50/30 relative overflow-hidden">
+<section className="py-16 sm:py-24 bg-gradient-to-br from-slate-50 via-white to-emerald-50/30 dark:from-slate-950 dark:via-slate-900 dark:to-emerald-950/20 relative overflow-hidden">
   {/* Background decorative elements */}
   <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-emerald-500/10 to-teal-500/10 rounded-full blur-3xl"></div>
   <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-full blur-2xl"></div>
   
-  <div className="container mx-auto px-6 max-w-7xl relative z-10">
+  <div className="container mx-auto px-4 sm:px-6 max-w-7xl relative z-10">
     <motion.div 
       className="text-center mb-16"
       initial={{ opacity: 0, y: 30 }}
@@ -1345,34 +1367,34 @@ export default function FeesPage() {
         </svg>
         FREQUENTLY ASKED QUESTIONS
       </motion.div>
-      <p className="text-slate-500 text-lg max-w-2xl mx-auto">Clarifications on our fee structure and account maintenance. Find answers to everything you need to know.</p>
+      <p className="text-slate-500 dark:text-slate-400 text-lg max-w-2xl mx-auto">Clarifications on our fee structure and account maintenance. Find answers to everything you need to know.</p>
     </motion.div>
 
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       
       {/* 1. Maintenance Fee Billing */}
       <motion.details 
-        className="group bg-white/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+        className="group bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 dark:border-emerald-900/40 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
         initial={{ opacity: 0, x: -50 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
         transition={{ delay: 0.1 }}
       >
-        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 transition-colors">
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 dark:hover:bg-emerald-950/30 transition-colors">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center flex-shrink-0">
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <span className="font-bold text-slate-900">How is the maintenance fee billed?</span>
+            <span className="font-bold text-slate-900 dark:text-slate-100">How is the maintenance fee billed?</span>
           </div>
           <span className="transform group-open:rotate-180 transition-transform duration-300 text-emerald-500">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
         <motion.div 
-          className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-emerald-100/50 pt-4"
+          className="px-6 pb-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 pt-4"
           initial={{ height: 0, opacity: 0 }}
           whileInView={{ height: "auto", opacity: 1 }}
           viewport={{ once: false }}
@@ -1383,27 +1405,27 @@ export default function FeesPage() {
 
       {/* 2. Fee Waiver */}
       <motion.details 
-        className="group bg-white/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+        className="group bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 dark:border-emerald-900/40 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
         initial={{ opacity: 0, x: 50 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
         transition={{ delay: 0.2 }}
       >
-        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 transition-colors">
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 dark:hover:bg-emerald-950/30 transition-colors">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center flex-shrink-0">
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <span className="font-bold text-slate-900">How can I waive the maintenance fee?</span>
+            <span className="font-bold text-slate-900 dark:text-slate-100">How can I waive the maintenance fee?</span>
           </div>
           <span className="transform group-open:rotate-180 transition-transform duration-300 text-emerald-500">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
         <motion.div 
-          className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-emerald-100/50 pt-4"
+          className="px-6 pb-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 pt-4"
           initial={{ height: 0, opacity: 0 }}
           whileInView={{ height: "auto", opacity: 1 }}
           viewport={{ once: false }}
@@ -1414,27 +1436,27 @@ export default function FeesPage() {
 
       {/* 3. Virtual Cards */}
       <motion.details 
-        className="group bg-white/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+        className="group bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 dark:border-emerald-900/40 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
         initial={{ opacity: 0, x: -50 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
         transition={{ delay: 0.3 }}
       >
-        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 transition-colors">
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 dark:hover:bg-emerald-950/30 transition-colors">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center flex-shrink-0">
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
               </svg>
             </div>
-            <span className="font-bold text-slate-900">Is the Virtual Card really free?</span>
+            <span className="font-bold text-slate-900 dark:text-slate-100">Is the Virtual Card really free?</span>
           </div>
           <span className="transform group-open:rotate-180 transition-transform duration-300 text-emerald-500">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
         <motion.div 
-          className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-emerald-100/50 pt-4"
+          className="px-6 pb-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 pt-4"
           initial={{ height: 0, opacity: 0 }}
           whileInView={{ height: "auto", opacity: 1 }}
           viewport={{ once: false }}
@@ -1445,27 +1467,27 @@ export default function FeesPage() {
 
       {/* 4. Incoming ACH */}
       <motion.details 
-        className="group bg-white/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+        className="group bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 dark:border-emerald-900/40 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
         initial={{ opacity: 0, x: 50 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
         transition={{ delay: 0.4 }}
       >
-        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 transition-colors">
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 dark:hover:bg-emerald-950/30 transition-colors">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center flex-shrink-0">
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
               </svg>
             </div>
-            <span className="font-bold text-slate-900">Are there fees for incoming ACH transfers?</span>
+            <span className="font-bold text-slate-900 dark:text-slate-100">Are there fees for incoming ACH transfers?</span>
           </div>
           <span className="transform group-open:rotate-180 transition-transform duration-300 text-emerald-500">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
         <motion.div 
-          className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-emerald-100/50 pt-4"
+          className="px-6 pb-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 pt-4"
           initial={{ height: 0, opacity: 0 }}
           whileInView={{ height: "auto", opacity: 1 }}
           viewport={{ once: false }}
@@ -1476,27 +1498,27 @@ export default function FeesPage() {
 
       {/* 5. Wires */}
       <motion.details 
-        className="group bg-white/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+        className="group bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 dark:border-emerald-900/40 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
         initial={{ opacity: 0, x: -50 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
         transition={{ delay: 0.5 }}
       >
-        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 transition-colors">
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 dark:hover:bg-emerald-950/30 transition-colors">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center flex-shrink-0">
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
               </svg>
             </div>
-            <span className="font-bold text-slate-900">What are the fees for Wire transfers?</span>
+            <span className="font-bold text-slate-900 dark:text-slate-100">What are the fees for Wire transfers?</span>
           </div>
           <span className="transform group-open:rotate-180 transition-transform duration-300 text-emerald-500">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
         <motion.div 
-          className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-emerald-100/50 pt-4"
+          className="px-6 pb-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 pt-4"
           initial={{ height: 0, opacity: 0 }}
           whileInView={{ height: "auto", opacity: 1 }}
           viewport={{ once: false }}
@@ -1507,27 +1529,27 @@ export default function FeesPage() {
 
       {/* 6. ATM Withdrawal */}
       <motion.details 
-        className="group bg-white/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+        className="group bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 dark:border-emerald-900/40 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
         initial={{ opacity: 0, x: 50 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
         transition={{ delay: 0.6 }}
       >
-        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 transition-colors">
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 dark:hover:bg-emerald-950/30 transition-colors">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center flex-shrink-0">
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
             </div>
-            <span className="font-bold text-slate-900">Are there fees for ATM withdrawals?</span>
+            <span className="font-bold text-slate-900 dark:text-slate-100">Are there fees for ATM withdrawals?</span>
           </div>
           <span className="transform group-open:rotate-180 transition-transform duration-300 text-emerald-500">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
         <motion.div 
-          className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-emerald-100/50 pt-4"
+          className="px-6 pb-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 pt-4"
           initial={{ height: 0, opacity: 0 }}
           whileInView={{ height: "auto", opacity: 1 }}
           viewport={{ once: false }}
@@ -1538,27 +1560,27 @@ export default function FeesPage() {
 
       {/* 7. Additional USD Accounts */}
       <motion.details 
-        className="group bg-white/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+        className="group bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 dark:border-emerald-900/40 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
         initial={{ opacity: 0, x: -50 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
         transition={{ delay: 0.7 }}
       >
-        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 transition-colors">
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 dark:hover:bg-emerald-950/30 transition-colors">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center flex-shrink-0">
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
             </div>
-            <span className="font-bold text-slate-900">What are the fees for additional USD accounts?</span>
+            <span className="font-bold text-slate-900 dark:text-slate-100">What are the fees for additional USD accounts?</span>
           </div>
           <span className="transform group-open:rotate-180 transition-transform duration-300 text-emerald-500">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
         <motion.div 
-          className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-emerald-100/50 pt-4"
+          className="px-6 pb-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 pt-4"
           initial={{ height: 0, opacity: 0 }}
           whileInView={{ height: "auto", opacity: 1 }}
           viewport={{ once: false }}
@@ -1569,27 +1591,27 @@ export default function FeesPage() {
 
       {/* 8. Business - Virtual Cards */}
       <motion.details 
-        className="group bg-white/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+        className="group bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 dark:border-emerald-900/40 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
         initial={{ opacity: 0, x: 50 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
         transition={{ delay: 0.8 }}
       >
-        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 transition-colors">
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 dark:hover:bg-emerald-950/30 transition-colors">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center flex-shrink-0">
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
               </svg>
             </div>
-            <span className="font-bold text-slate-900">How many Virtual Cards can a business have?</span>
+            <span className="font-bold text-slate-900 dark:text-slate-100">How many Virtual Cards can a business have?</span>
           </div>
           <span className="transform group-open:rotate-180 transition-transform duration-300 text-emerald-500">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
         <motion.div 
-          className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-emerald-100/50 pt-4"
+          className="px-6 pb-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 pt-4"
           initial={{ height: 0, opacity: 0 }}
           whileInView={{ height: "auto", opacity: 1 }}
           viewport={{ once: false }}
@@ -1600,27 +1622,27 @@ export default function FeesPage() {
 
       {/* 9. Business - P2P Transfers */}
       <motion.details 
-        className="group bg-white/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+        className="group bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 dark:border-emerald-900/40 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
         initial={{ opacity: 0, x: -50 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
         transition={{ delay: 0.9 }}
       >
-        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 transition-colors">
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 dark:hover:bg-emerald-950/30 transition-colors">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center flex-shrink-0">
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
             </div>
-            <span className="font-bold text-slate-900">Can I use P2P transfers for my business?</span>
+            <span className="font-bold text-slate-900 dark:text-slate-100">Can I use P2P transfers for my business?</span>
           </div>
           <span className="transform group-open:rotate-180 transition-transform duration-300 text-emerald-500">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
         <motion.div 
-          className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-emerald-100/50 pt-4"
+          className="px-6 pb-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 pt-4"
           initial={{ height: 0, opacity: 0 }}
           whileInView={{ height: "auto", opacity: 1 }}
           viewport={{ once: false }}
@@ -1631,27 +1653,27 @@ export default function FeesPage() {
 
       {/* 10. Account Limits - Personal */}
       <motion.details 
-        className="group bg-white/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+        className="group bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 dark:border-emerald-900/40 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
         initial={{ opacity: 0, x: 50 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
         transition={{ delay: 1.0 }}
       >
-        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 transition-colors">
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 dark:hover:bg-emerald-950/30 transition-colors">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center flex-shrink-0">
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
             </div>
-            <span className="font-bold text-slate-900">How many USD accounts can I have with a Personal account?</span>
+            <span className="font-bold text-slate-900 dark:text-slate-100">How many USD accounts can I have with a Personal account?</span>
           </div>
           <span className="transform group-open:rotate-180 transition-transform duration-300 text-emerald-500">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
         <motion.div 
-          className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-emerald-100/50 pt-4"
+          className="px-6 pb-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 pt-4"
           initial={{ height: 0, opacity: 0 }}
           whileInView={{ height: "auto", opacity: 1 }}
           viewport={{ once: false }}
@@ -1662,27 +1684,27 @@ export default function FeesPage() {
 
       {/* 11. Account Limits - Business */}
       <motion.details 
-        className="group bg-white/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+        className="group bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 dark:border-emerald-900/40 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
         initial={{ opacity: 0, x: -50 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
         transition={{ delay: 1.1 }}
       >
-        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 transition-colors">
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 dark:hover:bg-emerald-950/30 transition-colors">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center flex-shrink-0">
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
               </svg>
             </div>
-            <span className="font-bold text-slate-900">How many USD accounts can I have with a Business account?</span>
+            <span className="font-bold text-slate-900 dark:text-slate-100">How many USD accounts can I have with a Business account?</span>
           </div>
           <span className="transform group-open:rotate-180 transition-transform duration-300 text-emerald-500">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
         <motion.div 
-          className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-emerald-100/50 pt-4"
+          className="px-6 pb-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 pt-4"
           initial={{ height: 0, opacity: 0 }}
           whileInView={{ height: "auto", opacity: 1 }}
           viewport={{ once: false }}
@@ -1693,27 +1715,27 @@ export default function FeesPage() {
 
       {/* 12. Physical Cards */}
       <motion.details 
-        className="group bg-white/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+        className="group bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 dark:border-emerald-900/40 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
         initial={{ opacity: 0, x: 50 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
         transition={{ delay: 1.2 }}
       >
-        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 transition-colors">
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 dark:hover:bg-emerald-950/30 transition-colors">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center flex-shrink-0">
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
               </svg>
             </div>
-            <span className="font-bold text-slate-900">What are the fees for Physical Cards?</span>
+            <span className="font-bold text-slate-900 dark:text-slate-100">What are the fees for Physical Cards?</span>
           </div>
           <span className="transform group-open:rotate-180 transition-transform duration-300 text-emerald-500">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
         <motion.div 
-          className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-emerald-100/50 pt-4"
+          className="px-6 pb-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 pt-4"
           initial={{ height: 0, opacity: 0 }}
           whileInView={{ height: "auto", opacity: 1 }}
           viewport={{ once: false }}
@@ -1724,27 +1746,27 @@ export default function FeesPage() {
 
       {/* 13. Cross-Border Payments */}
       <motion.details 
-        className="group bg-white/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+        className="group bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 dark:border-emerald-900/40 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
         initial={{ opacity: 0, x: -50 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
         transition={{ delay: 1.3 }}
       >
-        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 transition-colors">
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 dark:hover:bg-emerald-950/30 transition-colors">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center flex-shrink-0">
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <span className="font-bold text-slate-900">What are the fees for cross-border payments?</span>
+            <span className="font-bold text-slate-900 dark:text-slate-100">What are the fees for cross-border payments?</span>
           </div>
           <span className="transform group-open:rotate-180 transition-transform duration-300 text-emerald-500">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
         <motion.div 
-          className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-emerald-100/50 pt-4"
+          className="px-6 pb-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 pt-4"
           initial={{ height: 0, opacity: 0 }}
           whileInView={{ height: "auto", opacity: 1 }}
           viewport={{ once: false }}
@@ -1755,27 +1777,27 @@ export default function FeesPage() {
 
       {/* 14. Outgoing ACH */}
       <motion.details 
-        className="group bg-white/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+        className="group bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50 dark:border-emerald-900/40 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
         initial={{ opacity: 0, x: 50 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
         transition={{ delay: 1.4 }}
       >
-        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 transition-colors">
+        <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-emerald-50/50 dark:hover:bg-emerald-950/30 transition-colors">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center flex-shrink-0">
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
             </div>
-            <span className="font-bold text-slate-900">What are the fees for outgoing ACH transfers?</span>
+            <span className="font-bold text-slate-900 dark:text-slate-100">What are the fees for outgoing ACH transfers?</span>
           </div>
           <span className="transform group-open:rotate-180 transition-transform duration-300 text-emerald-500">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </span>
         </summary>
         <motion.div 
-          className="px-6 pb-6 text-sm text-slate-600 leading-relaxed border-t border-emerald-100/50 pt-4"
+          className="px-6 pb-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-emerald-100/50 dark:border-emerald-900/40 pt-4"
           initial={{ height: 0, opacity: 0 }}
           whileInView={{ height: "auto", opacity: 1 }}
           viewport={{ once: false }}
@@ -1789,7 +1811,7 @@ export default function FeesPage() {
 </section>
 
 {/* --- WHY CHOOSE PRIYO PAY --- */}
-<section className="relative py-16 bg-gradient-to-b from-white to-emerald-50 overflow-hidden">
+<section className="relative py-16 bg-gradient-to-b from-white to-emerald-50 dark:from-slate-900 dark:to-emerald-950/20 overflow-hidden">
   
   {/* Decorative background elements */}
   <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -1797,7 +1819,7 @@ export default function FeesPage() {
     <div className="absolute bottom-0 right-0 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl"></div>
   </div>
 
-  <div className="max-w-6xl mx-auto px-6 relative z-10">
+  <div className="max-w-6xl mx-auto px-4 sm:px-6 relative z-10">
 
     {/* Header */}
     <div className="text-center max-w-3xl mx-auto mb-12">
@@ -1815,7 +1837,7 @@ export default function FeesPage() {
       </motion.div>
 
       <motion.h2 
-        className="text-4xl md:text-5xl font-extrabold text-slate-900 mt-2 leading-tight"
+        className="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-slate-100 mt-2 leading-tight"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
@@ -1829,11 +1851,11 @@ export default function FeesPage() {
     </div>
 
     {/* Cards - 7 cards in a responsive grid */}
-    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-12">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-12">
 
       {/* Card 1: FREE Virtual Cards */}
       <motion.div
-        className="group bg-white border border-emerald-100 rounded-xl p-5 text-center shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+        className="group bg-white dark:bg-slate-900 border border-emerald-100 dark:border-emerald-900/40 rounded-xl p-5 text-center shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
@@ -1844,12 +1866,12 @@ export default function FeesPage() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
           </svg>
         </div>
-        <h3 className="font-semibold text-sm text-slate-900">FREE Virtual Cards</h3>
+        <h3 className="font-semibold text-sm text-slate-900 dark:text-slate-100">FREE Virtual Cards</h3>
       </motion.div>
 
       {/* Card 2: Low Transfer Fees */}
       <motion.div
-        className="group bg-white border border-emerald-100 rounded-xl p-5 text-center shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+        className="group bg-white dark:bg-slate-900 border border-emerald-100 dark:border-emerald-900/40 rounded-xl p-5 text-center shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
@@ -1860,12 +1882,12 @@ export default function FeesPage() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
           </svg>
         </div>
-        <h3 className="font-semibold text-sm text-slate-900">Low Transfer Fees</h3>
+        <h3 className="font-semibold text-sm text-slate-900 dark:text-slate-100">Low Transfer Fees</h3>
       </motion.div>
 
       {/* Card 3: Global Transfers */}
       <motion.div
-        className="group bg-white border border-emerald-100 rounded-xl p-5 text-center shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+        className="group bg-white dark:bg-slate-900 border border-emerald-100 dark:border-emerald-900/40 rounded-xl p-5 text-center shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
@@ -1876,12 +1898,12 @@ export default function FeesPage() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <h3 className="font-semibold text-sm text-slate-900">Global Transfers</h3>
+        <h3 className="font-semibold text-sm text-slate-900 dark:text-slate-100">Global Transfers</h3>
       </motion.div>
 
       {/* Card 4: FREE USD Accounts */}
       <motion.div
-        className="group bg-white border border-emerald-100 rounded-xl p-5 text-center shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+        className="group bg-white dark:bg-slate-900 border border-emerald-100 dark:border-emerald-900/40 rounded-xl p-5 text-center shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
@@ -1892,12 +1914,12 @@ export default function FeesPage() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
           </svg>
         </div>
-        <h3 className="font-semibold text-sm text-slate-900">FREE USD Accounts</h3>
+        <h3 className="font-semibold text-sm text-slate-900 dark:text-slate-100">FREE USD Accounts</h3>
       </motion.div>
 
       {/* Card 5: FDIC Insured */}
       <motion.div
-        className="group bg-white border border-emerald-100 rounded-xl p-5 text-center shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+        className="group bg-white dark:bg-slate-900 border border-emerald-100 dark:border-emerald-900/40 rounded-xl p-5 text-center shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
@@ -1908,12 +1930,12 @@ export default function FeesPage() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
           </svg>
         </div>
-        <h3 className="font-semibold text-sm text-slate-900">FDIC Insured</h3>
+        <h3 className="font-semibold text-sm text-slate-900 dark:text-slate-100">FDIC Insured</h3>
       </motion.div>
 
       {/* Card 6: Transparent Pricing */}
       <motion.div
-        className="group bg-white border border-emerald-100 rounded-xl p-5 text-center shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+        className="group bg-white dark:bg-slate-900 border border-emerald-100 dark:border-emerald-900/40 rounded-xl p-5 text-center shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
@@ -1924,12 +1946,12 @@ export default function FeesPage() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
           </svg>
         </div>
-        <h3 className="font-semibold text-sm text-slate-900">Transparent Pricing</h3>
+        <h3 className="font-semibold text-sm text-slate-900 dark:text-slate-100">Transparent Pricing</h3>
       </motion.div>
 
       {/* Card 7: Local Support */}
       <motion.div
-        className="group bg-white border border-emerald-100 rounded-xl p-5 text-center shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+        className="group bg-white dark:bg-slate-900 border border-emerald-100 dark:border-emerald-900/40 rounded-xl p-5 text-center shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
@@ -1940,7 +1962,7 @@ export default function FeesPage() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
           </svg>
         </div>
-        <h3 className="font-semibold text-sm text-slate-900">Local Support</h3>
+        <h3 className="font-semibold text-sm text-slate-900 dark:text-slate-100">Local Support</h3>
       </motion.div>
 
     </div>
@@ -1966,7 +1988,7 @@ export default function FeesPage() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
         </svg>
       </Link>
-      <p className="text-slate-500 mt-4 text-sm">
+      <p className="text-slate-500 dark:text-slate-400 mt-4 text-sm">
         No credit check • No minimum deposit • 100% online
       </p>
     </motion.div>
@@ -1975,14 +1997,14 @@ export default function FeesPage() {
 </section>
 
       {/* --- FOOTER --- */}
-      <footer className="bg-gray-50 text-gray-900 border-t border-gray-200">
-        <div className="mx-auto w-[90vw] px-0 py-16">
+      <footer className="bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-slate-100 border-t border-gray-200 dark:border-slate-800">
+        <div className="mx-auto w-[92vw] sm:w-[90vw] px-0 py-12 sm:py-16">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
             <div className="lg:col-span-1">
               <div className="mb-6">
                 <img alt="Priyo Logo" loading="lazy" width="150" height="150" decoding="async" className="w-auto h-8" style={{color: 'transparent'}} src="/priyo-logo.png" />
               </div>
-              <p className="text-gray-600 text-sm leading-relaxed mb-6">
+              <p className="text-gray-600 dark:text-slate-400 text-sm leading-relaxed mb-6">
                 Empowering global financial solutions with innovative cross-border payments, student services, and business solutions.
               </p>
               <div className="flex space-x-4 mb-6">
@@ -2002,7 +2024,7 @@ export default function FeesPage() {
                   </svg>
                 </a>
               </div>
-              <div className="space-y-4 flex flex-row gap-4">
+              <div className="space-y-0 flex flex-col sm:flex-row gap-4">
                 <a href="https://play.google.com/store/apps/details?id=com.priyo.pay&hl=en" target="_blank" rel="noopener noreferrer" className="block hover:opacity-80 transition-opacity">
                   <img src="/playstore.webp" alt="Get it on Google Play" className="h-8 w-auto max-w-[180px] object-contain" />
                 </a>
@@ -2012,52 +2034,52 @@ export default function FeesPage() {
               </div>
             </div>
             <div>
-              <h3 className="text-gray-900 font-semibold text-lg mb-6">Our Services</h3>
+              <h3 className="text-gray-900 dark:text-slate-100 font-semibold text-lg mb-6">Our Services</h3>
               <ul className="space-y-3">
-                <li><a href="/personal" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">Personal</a></li>
-                <li><a href="/business" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">Business</a></li>
-                <li><a href="/card" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">Card</a></li>
-                <li><a href="#education" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">Education</a></li>
-                <li><a href="/ads" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">Advertising</a></li>
+                <li><a href="/personal" className="text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200 transition-colors text-sm">Personal</a></li>
+                <li><a href="/business" className="text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200 transition-colors text-sm">Business</a></li>
+                <li><a href="/card" className="text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200 transition-colors text-sm">Card</a></li>
+                <li><a href="#education" className="text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200 transition-colors text-sm">Education</a></li>
+                <li><a href="/ads" className="text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200 transition-colors text-sm">Advertising</a></li>
               </ul>
             </div>
             <div>
-              <h3 className="text-gray-900 font-semibold text-lg mb-6">Company</h3>
+              <h3 className="text-gray-900 dark:text-slate-100 font-semibold text-lg mb-6">Company</h3>
               <ul className="space-y-3">
-                <li><a href="#about" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">About Us</a></li>
-                <li><a href="https://jobs.priyo.com" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">Careers</a></li>
-                <li><a href="https://news.priyo.com" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">News & Updates</a></li>
-                <li><a href="#press" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">Press Kit</a></li>
-                <li><a href="/contact" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">Contact Us</a></li>
+                <li><a href="#about" className="text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200 transition-colors text-sm">About Us</a></li>
+                <li><a href="https://jobs.priyo.com" className="text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200 transition-colors text-sm">Careers</a></li>
+                <li><a href="https://news.priyo.com" className="text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200 transition-colors text-sm">News & Updates</a></li>
+                <li><a href="#press" className="text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200 transition-colors text-sm">Press Kit</a></li>
+                <li><a href="/contact" className="text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200 transition-colors text-sm">Contact Us</a></li>
               </ul>
             </div>
             <div>
-              <h3 className="text-gray-900 font-semibold text-lg mb-6">Legal</h3>
+              <h3 className="text-gray-900 dark:text-slate-100 font-semibold text-lg mb-6">Legal</h3>
               <ul className="space-y-3">
-                <li><a href="/disclosures" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">Disclosures</a></li>
-                <li><a href="/terms" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">Terms of Service</a></li>
-                <li><a href="/privacy" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">Privacy Policy</a></li>
-                <li><a href="/fees" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">Fees & Charges</a></li>
+                <li><a href="/disclosures" className="text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200 transition-colors text-sm">Disclosures</a></li>
+                <li><a href="/terms" className="text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200 transition-colors text-sm">Terms of Service</a></li>
+                <li><a href="/privacy" className="text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200 transition-colors text-sm">Privacy Policy</a></li>
+                <li><a href="/fees" className="text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200 transition-colors text-sm">Fees & Charges</a></li>
               </ul>
             </div>
           </div>
-          <div className="border-t border-gray-200 pt-8 mb-8">
-            <div className="space-y-4 text-xs text-gray-500 leading-relaxed">
+          <div className="border-t border-gray-200 dark:border-slate-800 pt-8 mb-8">
+            <div className="space-y-4 text-xs text-gray-500 dark:text-slate-500 leading-relaxed">
               <p>Priyo Payments LLC, a subsidiary of Priyo Inc., is a service provider of Regent Bank USA for Priyo Card and Checking Accounts. Neither Priyo Inc. nor Priyo Payments LLC is a bank.</p>
               <p>Banking services are provided by Regent Bank, Member FDIC. FDIC insurance only covers failure of insured depository institutions. Certain conditions must be satisfied for pass-through FDIC deposit insurance to apply.</p>
               <p>The Priyo Mastercard® Debit Card is issued by Regent Bank pursuant to a license from Mastercard U.S.A. Inc. and may be used everywhere Mastercard debit cards are accepted. Mastercard is a registered trademark, and the circles design is a trademark of Mastercard International Incorporated.</p>
             </div>
           </div>
         </div>
-        <div className="bg-gray-100 text-gray-600 text-sm">
-          <div className="border-t border-gray-300"></div>
+        <div className="bg-gray-100 dark:bg-slate-900 text-gray-600 dark:text-slate-400 text-sm">
+          <div className="border-t border-gray-300 dark:border-slate-800"></div>
           <div className="max-w-7xl mx-auto px-4 py-4">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-              <div className="text-gray-600">Copyright © 2026 Priyo Inc. All rights reserved.</div>
-              <div className="text-gray-600">United States</div>
-              <div className="flex items-center flex-wrap justify-start sm:gap-x-2 text-gray-600">
-                <a href="/privacy" className="hover:text-gray-800 transition-colors">Privacy Policy |</a>
-                <a href="/terms" className="hover:text-gray-800 transition-colors">Terms of Use</a>
+              <div className="text-gray-600 dark:text-slate-400">Copyright © 2026 Priyo Inc. All rights reserved.</div>
+              <div className="text-gray-600 dark:text-slate-400">United States</div>
+              <div className="flex items-center flex-wrap justify-start sm:gap-x-2 text-gray-600 dark:text-slate-400">
+                <a href="/privacy" className="hover:text-gray-800 dark:hover:text-slate-200 transition-colors">Privacy Policy |</a>
+                <a href="/terms" className="hover:text-gray-800 dark:hover:text-slate-200 transition-colors">Terms of Use</a>
               </div>
             </div>
           </div>
@@ -2067,3 +2089,10 @@ export default function FeesPage() {
     </div>
   );
 }
+
+
+
+
+
+
+
