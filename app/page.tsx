@@ -462,7 +462,7 @@ export default function FeesPage() {
              <span className="text-xl font-extrabold text-slate-900 dark:text-[#f0f4f8] tracking-tight">Priyo Pay</span>
           </Link>
           <div className="flex items-center gap-3 sm:gap-4">
-            <Link href="https://pay.priyo.com/get-started" className="bg-[#00e68a] text-white px-4 sm:px-5 py-2 rounded-xl font-semibold text-xs sm:text-sm hover:bg-[#00cc7a] transition-all shadow-lg shadow-[#00e68a]/10">
+            <Link href="https://pay.priyo.com/get-started" className="bg-[#00e68a] text-[#0a0e17] px-4 sm:px-5 py-2 rounded-xl font-semibold text-xs sm:text-sm hover:bg-[#00cc7a] transition-all shadow-lg shadow-[#00e68a]/10">
                 Open Account
             </Link>
           </div>
@@ -543,7 +543,7 @@ export default function FeesPage() {
               <motion.a 
                 target="_blank" 
                 href="https://pay.priyo.com/get-started" 
-                className="inline-flex items-center gap-2 bg-[#00e68a] text-white px-6 py-3 rounded-xl font-semibold text-base hover:bg-[#00cc7a] hover:shadow-lg hover:shadow-[#00e68a]/16 transition-all duration-300 w-fit"
+                className="inline-flex items-center gap-2 bg-[#00e68a] text-[#0a0e17] px-6 py-3 rounded-xl font-semibold text-base hover:bg-[#00cc7a] hover:shadow-lg hover:shadow-[#00e68a]/16 transition-all duration-300 w-fit"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.8, ease: "easeOut" }}
@@ -592,7 +592,7 @@ export default function FeesPage() {
                       transition={shouldReduceMotion ? undefined : { duration: 14, repeat: Infinity, ease: "linear" }}
                       style={{
                         background:
-                          'conic-gradient(from 0deg, transparent 0deg, transparent 300deg, rgba(16,185,129,0.65) 332deg, rgba(20,184,166,0.7) 350deg, rgba(56,189,248,0.6) 360deg)',
+                          'conic-gradient(from 0deg, transparent 0deg, transparent 300deg, rgba(0,230,138,0.42) 332deg, rgba(0,204,122,0.45) 350deg, rgba(0,184,111,0.35) 360deg)',
                         filter: 'blur(0.8px)',
                       }}
                     />
@@ -679,7 +679,7 @@ export default function FeesPage() {
                           onClick={() => setCalculatorAccount('personal')}
                           className={`flex-1 px-5 py-3 rounded-xl font-bold text-base transition-all duration-300 transform ${
                             calculatorAccount === 'personal'
-                              ? 'bg-gradient-to-r from-[#00e68a] to-[#00cc7a] text-white shadow-xl shadow-[#00e68a]/24 ring-2 ring-[#00e68a]/35 scale-105'
+                              ? 'bg-gradient-to-r from-[#00e68a] to-[#00cc7a] text-[#0a0e17] shadow-xl shadow-[#00e68a]/24 ring-2 ring-[#00e68a]/35 scale-105'
                               : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-white/10 hover:shadow-lg'
                           }`}
                           whileHover={shouldReduceMotion ? undefined : { scale: 1.05 }}
@@ -696,7 +696,7 @@ export default function FeesPage() {
                           onClick={() => setCalculatorAccount('business')}
                           className={`flex-1 px-5 py-3 rounded-xl font-bold text-base transition-all duration-300 transform ${
                             calculatorAccount === 'business'
-                              ? 'bg-gradient-to-r from-[#00e68a] to-[#00cc7a] text-white shadow-xl shadow-[#00e68a]/24 ring-2 ring-[#00e68a]/35 scale-105'
+                              ? 'bg-gradient-to-r from-[#00e68a] to-[#00cc7a] text-[#0a0e17] shadow-xl shadow-[#00e68a]/24 ring-2 ring-[#00e68a]/35 scale-105'
                               : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-white/10 hover:shadow-lg'
                           }`}
                           whileHover={shouldReduceMotion ? undefined : { scale: 1.05 }}
@@ -1318,7 +1318,7 @@ export default function FeesPage() {
       transition={{ duration: 0.6 }}
     >
       <motion.div 
-        className="inline-flex items-center gap-2 bg-gradient-to-r from-[#00e68a] to-[#00cc7a] text-white px-6 py-3 rounded-full text-base font-bold mb-4 shadow-lg shadow-[#00e68a]/18"
+        className="inline-flex items-center gap-2 bg-gradient-to-r from-[#00e68a] to-[#00cc7a] text-[#0a0e17] px-6 py-3 rounded-full text-base font-bold mb-4 shadow-lg shadow-[#00e68a]/18"
         initial={{ opacity: 0, scale: 0.8 }}
         whileInView={{ opacity: 1, scale: 1 }}
         viewport={{ once: true }}
@@ -1332,7 +1332,7 @@ export default function FeesPage() {
       <p className="text-slate-500 dark:text-[#8899aa] text-lg max-w-2xl mx-auto">Clarifications on our fee structure and account maintenance. Find answers to everything you need to know.</p>
     </motion.div>
 
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
       
       {/* 1. Maintenance Fee Billing */}
       <motion.details 
@@ -1746,7 +1746,7 @@ export default function FeesPage() {
     {/* Header */}
     <div className="text-center max-w-3xl mx-auto mb-12">
       <motion.div
-        className="inline-flex items-center gap-2 bg-gradient-to-r from-[#00e68a] to-[#00cc7a] text-white px-5 py-2.5 rounded-full text-sm font-bold mb-6 shadow-lg shadow-[#00e68a]/18 border border-white/20"
+        className="inline-flex items-center gap-2 bg-gradient-to-r from-[#00e68a] to-[#00cc7a] text-[#0a0e17] px-5 py-2.5 rounded-full text-sm font-bold mb-6 shadow-lg shadow-[#00e68a]/18 border border-white/20"
         initial={{ opacity: 0, scale: 0.8 }}
         whileInView={{ opacity: 1, scale: 1 }}
         viewport={{ once: true }}
@@ -1900,7 +1900,7 @@ export default function FeesPage() {
       <Link
         href="https://pay.priyo.com/get-started"
         target="_blank"
-        className="inline-flex items-center gap-2 bg-gradient-to-r from-[#00e68a] to-[#00cc7a] text-white px-8 py-4 rounded-xl font-bold text-base hover:from-[#00cc7a] hover:to-[#00b86f] transition-all duration-300 shadow-xl shadow-[#00e68a]/18 hover:shadow-[#00e68a]/30 hover:-translate-y-0.5"
+        className="inline-flex items-center gap-2 bg-gradient-to-r from-[#00e68a] to-[#00cc7a] text-[#0a0e17] px-8 py-4 rounded-xl font-bold text-base hover:from-[#00cc7a] hover:to-[#00b86f] transition-all duration-300 shadow-xl shadow-[#00e68a]/18 hover:shadow-[#00e68a]/30 hover:-translate-y-0.5"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2h14a2 2 0 002-2v-5M16 12h5M16 12a2 2 0 100 4h5"/>
