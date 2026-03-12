@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
@@ -59,7 +59,7 @@ const FeeSubsection = ({ title, children, id }: any) => (
 );
 
 
-const AccountTypeNavigation = ({ activeAccountType, setActiveAccountType }: any) => {
+const AccountTypeNavigation = ({ activeAccountType, setActiveAccountType, isHeaderVisible }: any) => {
   const accountTypes = [
     { 
       id: 'personal', 
@@ -82,7 +82,9 @@ const AccountTypeNavigation = ({ activeAccountType, setActiveAccountType }: any)
   ];
 
   return (
-    <div className="sticky top-[64px] sm:top-[68px] z-40 bg-gradient-to-b from-white/90 to-white/60 dark:from-[#0a0e17]/90 dark:to-[#0f1a2e]/80 backdrop-blur-lg border-b border-white/20 dark:border-white/10 shadow-lg rounded-2xl">
+    <div
+      className={`sticky ${isHeaderVisible ? 'top-[64px] sm:top-[68px]' : 'top-0'} z-40 bg-gradient-to-b from-white/90 to-white/60 dark:from-[#0a0e17]/90 dark:to-[#0f1a2e]/80 backdrop-blur-lg border-b border-white/20 dark:border-white/10 shadow-lg rounded-2xl transition-all duration-300`}
+    >
       <div className="container mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-center gap-2 sm:gap-8 py-3 sm:py-4">
           {accountTypes.map((account) => (
@@ -105,11 +107,13 @@ const AccountTypeNavigation = ({ activeAccountType, setActiveAccountType }: any)
   );
 };
 
-const SubNavigation = ({ activeSection, setActiveSection, accountType }: any) => {
+const SubNavigation = ({ activeSection, setActiveSection, accountType, isHeaderVisible }: any) => {
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
-      const headerHeight = window.innerWidth >= 1024 ? 145 : 118;
+      const headerHeight = window.innerWidth >= 1024
+        ? (isHeaderVisible ? 145 : 78)
+        : (isHeaderVisible ? 118 : 54);
       
       const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
       const offsetPosition = elementPosition - headerHeight - 10; // 10px extra spacing
@@ -156,7 +160,7 @@ const SubNavigation = ({ activeSection, setActiveSection, accountType }: any) =>
   }, [activeSection, accountType, setActiveSection]);
 
   return (
-    <div className="lg:sticky lg:top-[145px] z-30 bg-gradient-to-b from-white/90 to-white/60 dark:from-[#0f1a2e]/90 dark:to-[#141e33]/80 backdrop-blur-lg border border-white/20 dark:border-white/10 lg:border-r lg:border-l-0 shadow-lg rounded-2xl">
+    <div className={`lg:sticky ${isHeaderVisible ? 'lg:top-[145px]' : 'lg:top-[78px]'} z-30 bg-gradient-to-b from-white/90 to-white/60 dark:from-[#0f1a2e]/90 dark:to-[#141e33]/80 backdrop-blur-lg border border-white/20 dark:border-white/10 lg:border-r lg:border-l-0 shadow-lg rounded-2xl`}>
       <div className="px-3 sm:px-4 py-3 sm:py-4">
         <div className="flex lg:flex-col items-start gap-2 overflow-x-auto lg:overflow-y-auto pb-1 lg:pb-0">
           {SUB_NAV_ITEMS.map((item) => {
@@ -405,6 +409,7 @@ const useFeeCalculator = () => {
 export default function FeesPage() {
   const [activeAccountType, setActiveAccountType] = useState('personal');
   const [activeSection, setActiveSection] = useState('personal-maintenance-service-fees');
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const shouldReduceMotion = useReducedMotion();
   const heroParticles = useMemo(
     () =>
@@ -451,23 +456,45 @@ export default function FeesPage() {
     setActiveSection(`${activeAccountType}-maintenance-service-fees`);
   }, [activeAccountType]);
 
+  useEffect(() => {
+    let lastScrollY = window.scrollY;
+    let ticking = false;
+
+    const updateHeaderVisibility = () => {
+      const currentScrollY = window.scrollY;
+      const scrollDelta = currentScrollY - lastScrollY;
+      const scrollThreshold = 8;
+
+      if (currentScrollY <= 20) {
+        setIsHeaderVisible(true);
+      } else if (scrollDelta > scrollThreshold) {
+        setIsHeaderVisible(false);
+      } else if (scrollDelta < -scrollThreshold) {
+        setIsHeaderVisible(true);
+      }
+
+      lastScrollY = currentScrollY;
+      ticking = false;
+    };
+
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(updateHeaderVisibility);
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0a0e17] font-inter text-slate-900 dark:text-[#f0f4f8] selection:bg-[#00e68a] selection:text-[#0a0e17]">
       <div className="fixed inset-0 -z-10 pointer-events-none bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] [background-size:60px_60px]" />
       
       {/* --- HEADER --- */}
-      <header className="bg-white/80 dark:bg-[#0a0e17]/85 backdrop-blur-md border-b border-slate-200 dark:border-white/10 sticky top-0 z-50">
-        <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-             <span className="text-xl font-extrabold text-slate-900 dark:text-[#f0f4f8] tracking-tight">Priyo Pay</span>
-          </Link>
-          <div className="flex items-center gap-3 sm:gap-4">
-            <Link href="https://pay.priyo.com/get-started" className="bg-[#00e68a] text-[#0a0e17] px-4 sm:px-5 py-2 rounded-xl font-semibold text-xs sm:text-sm hover:bg-[#00cc7a] transition-all shadow-lg shadow-[#00e68a]/10">
-                Open Account
-            </Link>
-          </div>
-        </div>
-      </header>
+      
 
       {/* --- HERO SECTION --- */}
       <section className="relative overflow-hidden bg-white dark:bg-[#0a0e17] min-h-[72vh] sm:min-h-[80vh] flex items-center">
@@ -904,6 +931,7 @@ export default function FeesPage() {
           <AccountTypeNavigation 
             activeAccountType={activeAccountType} 
             setActiveAccountType={setActiveAccountType} 
+            isHeaderVisible={isHeaderVisible}
           />
           
           <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 mt-6">
@@ -913,6 +941,7 @@ export default function FeesPage() {
                 activeSection={activeSection} 
                 setActiveSection={setActiveSection} 
                 accountType={activeAccountType}
+                isHeaderVisible={isHeaderVisible}
               />
             </div>
             
