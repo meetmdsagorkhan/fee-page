@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
@@ -16,21 +16,7 @@ const SUB_NAV_ITEMS = [
 // 1. Reusable Components (Theme-matched)
 // ----------------------------------------------------------------------
 
-const Badge = ({ children, color = 'slate' }: { children: React.ReactNode, color?: 'slate' | 'emerald' | 'pink' }) => {
-  const styles = {
-    slate: 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700',
-    emerald: 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20',
-    pink: 'bg-[#E61C5D]/5 text-[#E61C5D] border-[#E61C5D]/10 dark:bg-[#E61C5D]/10 dark:text-[#ff6b96] dark:border-[#E61C5D]/20',
-  };
-  
-  return (
-    <span className={`px-2.5 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider border ${styles[color]}`}>
-      {children}
-    </span>
-  );
-};
-
-const FeeRow = ({ label, desc, price, period, isHighlight = false }: any) => (
+const FeeRow = ({ label, desc, price, period }: any) => (
   <div className="flex flex-col sm:flex-row sm:items-center justify-between py-5 gap-4 group">
     <div className="flex-1">
       <div className="flex items-center gap-3">
@@ -154,10 +140,10 @@ const SubNavigation = ({ activeSection, setActiveSection, accountType }: any) =>
     
     // Cleanup
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [activeSection, accountType]);
+  }, [activeSection, accountType, setActiveSection]);
 
   return (
-    <div className="lg:sticky lg:top-[145px] z-30 bg-gradient-to-b from-white/90 to-white/60 dark:from-slate-900/90 dark:to-slate-900/60 backdrop-blur-lg border border-white/20 dark:border-slate-700/60 lg:border-r lg:border-l-0 shadow-lg rounded-2xl lg:rounded-r-2xl lg:rounded-l-none">
+    <div className="lg:sticky lg:top-[145px] z-30 bg-gradient-to-b from-white/90 to-white/60 dark:from-slate-900/90 dark:to-slate-900/60 backdrop-blur-lg border border-white/20 dark:border-slate-700/60 lg:border-r lg:border-l-0 shadow-lg rounded-2xl">
       <div className="px-3 sm:px-4 py-3 sm:py-4">
         <div className="flex lg:flex-col items-start gap-2 overflow-x-auto lg:overflow-y-auto pb-1 lg:pb-0">
           {SUB_NAV_ITEMS.map((item) => {
@@ -221,27 +207,6 @@ const useFeeCalculator = () => {
       'atm': 'Transaction Amount ($)'
     };
     return labels[calculatorService] || 'Amount';
-  };
-
-  const getServiceName = () => {
-    const names: Record<string, string> = {
-      'virtual-card': 'Virtual Card',
-      'physical-card': 'Physical Card',
-      'card-shipping': 'Card Shipping',
-      'maintenance': 'Maintenance Fee',
-      'additional-account': 'Additional USD Account',
-      'incoming-ach': 'Incoming ACH',
-      'outgoing-ach': 'Outgoing ACH',
-      'incoming-wire': 'Incoming Wire (Domestic)',
-      'outgoing-wire': 'Outgoing Wire (Domestic)',
-      'incoming-wire-intl': 'Incoming Wire (International)',
-      'p2p': 'P2P Transfer',
-      'third-party': 'Third-Party Payment',
-      'cross-border': 'Cross-Border Payment',
-      'usd-to-bdt': 'USD to BDT Conversion',
-      'atm': 'ATM Withdrawal'
-    };
-    return names[calculatorService] || '';
   };
 
   const getFeeRate = () => {
@@ -402,7 +367,6 @@ const useFeeCalculator = () => {
     transactionCount,
     setTransactionCount,
     getCalculatorLabel,
-    getServiceName,
     getFeeRate,
     calculateFee,
     getAccountLimits,
@@ -425,6 +389,17 @@ export default function FeesPage() {
       })),
     []
   );
+  const calculatorParticles = useMemo(
+    () =>
+      Array.from({ length: 6 }, (_, i) => ({
+        left: `${12 + ((i * 14) % 76)}%`,
+        top: `${14 + ((i * 19) % 70)}%`,
+        driftX: (i % 2 === 0 ? 4 : -4) + i,
+        duration: 2.4 + i * 0.35,
+        delay: i * 0.22,
+      })),
+    []
+  );
   
   const {
     calculatorAccount,
@@ -436,7 +411,6 @@ export default function FeesPage() {
     transactionCount,
     setTransactionCount,
     getCalculatorLabel,
-    getServiceName,
     getFeeRate,
     calculateFee,
     getAccountLimits,
@@ -466,80 +440,49 @@ export default function FeesPage() {
 
       {/* --- HERO SECTION --- */}
       <section className="relative overflow-hidden bg-white dark:bg-slate-900 min-h-[72vh] sm:min-h-[80vh] flex items-center">
-        {/* Enhanced Background Elements */}
+        {/* Aceternity-style background */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {/* Animated gradient orbs */}
-          <motion.div 
-            className="absolute top-0 right-0 w-[600px] h-[600px] bg-emerald-500/10 rounded-full blur-[100px]"
-            animate={shouldReduceMotion ? undefined : {
-              x: [0, 100, 0],
-              y: [0, -50, 0],
-              scale: [1, 1.2, 1],
-            }}
-            transition={shouldReduceMotion ? undefined : {
-              duration: 8,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
+          <motion.div
+            className="absolute -top-36 left-1/2 -translate-x-1/2 w-[42rem] h-[42rem] rounded-full bg-emerald-400/20 dark:bg-emerald-500/15 blur-[120px]"
+            animate={shouldReduceMotion ? undefined : { scale: [1, 1.08, 1], opacity: [0.45, 0.7, 0.45] }}
+            transition={shouldReduceMotion ? undefined : { duration: 10, repeat: Infinity, ease: "easeInOut" }}
           />
-          <motion.div 
-            className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[80px]"
-            animate={shouldReduceMotion ? undefined : {
-              x: [0, -80, 0],
-              y: [0, 60, 0],
-              scale: [1, 0.8, 1],
-            }}
-            transition={shouldReduceMotion ? undefined : {
-              duration: 10,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
+          <motion.div
+            className="absolute top-1/3 -left-24 w-[24rem] h-[24rem] rounded-full bg-teal-300/20 dark:bg-teal-500/15 blur-[90px]"
+            animate={shouldReduceMotion ? undefined : { x: [0, 26, 0], y: [0, -18, 0] }}
+            transition={shouldReduceMotion ? undefined : { duration: 12, repeat: Infinity, ease: "easeInOut" }}
           />
-          <motion.div 
-            className="absolute top-1/2 left-1/2 w-[400px] h-[400px] bg-purple-500/5 rounded-full blur-[60px]"
-            animate={shouldReduceMotion ? undefined : {
-              x: [0, 120, -120, 0],
-              y: [0, -80, 80, 0],
-              scale: [1, 1.1, 0.9, 1],
-            }}
-            transition={shouldReduceMotion ? undefined : {
-              duration: 15,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
+          <motion.div
+            className="absolute bottom-0 -right-24 w-[22rem] h-[22rem] rounded-full bg-cyan-300/15 dark:bg-cyan-500/12 blur-[85px]"
+            animate={shouldReduceMotion ? undefined : { x: [0, -20, 0], y: [0, 15, 0] }}
+            transition={shouldReduceMotion ? undefined : { duration: 13, repeat: Infinity, ease: "easeInOut" }}
           />
-          
-          {/* Floating particles */}
+
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(15,23,42,0.08)_1px,transparent_0)] dark:bg-[radial-gradient(circle_at_1px_1px,rgba(148,163,184,0.14)_1px,transparent_0)] [background-size:22px_22px] opacity-40"></div>
+          <div className="absolute inset-0 [mask-image:radial-gradient(ellipse_at_center,black_48%,transparent_86%)] bg-[linear-gradient(to_right,rgba(16,185,129,0.18)_1px,transparent_1px),linear-gradient(to_bottom,rgba(20,184,166,0.14)_1px,transparent_1px)] [background-size:68px_68px] opacity-45"></div>
+
+          <motion.div
+            className="absolute -top-20 left-[14%] w-px h-[140%] bg-gradient-to-b from-transparent via-emerald-400/50 to-transparent -rotate-12"
+            animate={shouldReduceMotion ? undefined : { y: [0, 22, 0], opacity: [0.3, 0.75, 0.3] }}
+            transition={shouldReduceMotion ? undefined : { duration: 7, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <motion.div
+            className="absolute -top-24 right-[17%] w-px h-[145%] bg-gradient-to-b from-transparent via-teal-400/45 to-transparent rotate-12"
+            animate={shouldReduceMotion ? undefined : { y: [0, -20, 0], opacity: [0.25, 0.65, 0.25] }}
+            transition={shouldReduceMotion ? undefined : { duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          />
+
           {heroParticles.map((particle, i) => (
             <motion.div
               key={i}
-              className="absolute w-2 h-2 bg-emerald-500/30 rounded-full"
-              style={{
-                left: particle.left,
-                top: particle.top,
-              }}
-              animate={shouldReduceMotion ? undefined : {
-                y: [0, -90, 0],
-                x: [0, particle.driftX, 0],
-                opacity: [0, 1, 0],
-              }}
-              transition={shouldReduceMotion ? undefined : {
-                duration: particle.duration,
-                repeat: Infinity,
-                delay: particle.delay,
-                ease: "easeInOut"
-              }}
+              className="absolute w-1.5 h-1.5 rounded-full bg-emerald-400/70"
+              style={{ left: particle.left, top: particle.top }}
+              animate={shouldReduceMotion ? undefined : { y: [0, -50, 0], x: [0, particle.driftX * 0.6, 0], opacity: [0.3, 1, 0.3] }}
+              transition={shouldReduceMotion ? undefined : { duration: particle.duration, repeat: Infinity, delay: particle.delay, ease: "easeInOut" }}
             />
           ))}
-          
-          {/* Grid pattern */}
-          <div className="absolute inset-0 bg-grid-pattern opacity-30"></div>
-          
-          {/* Currency background elements */}
-          <div className="absolute top-10 left-10 text-emerald-300/40 text-9xl font-bold rotate-12 select-none pointer-events-none">$</div>
-          <div className="absolute bottom-20 right-10 text-teal-300/40 text-8xl font-bold -rotate-12 select-none pointer-events-none">৳</div>
-          <div className="absolute top-1/2 right-1/4 text-emerald-300/30 text-6xl font-bold rotate-45 select-none pointer-events-none">$</div>
-          <div className="absolute top-32 right-32 text-teal-300/30 text-7xl font-bold -rotate-8 select-none pointer-events-none">৳</div>
+
+          <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-white/70 dark:to-slate-900/80"></div>
         </div>
 
         <div className="relative z-10 w-full py-10 sm:py-12 md:py-16 lg:py-20 px-4 sm:px-6 lg:px-0">
@@ -621,54 +564,54 @@ export default function FeesPage() {
               <div className="relative">
                 {/* Main calculator container with border animation */}
                 <div className="relative bg-gradient-to-br from-white via-emerald-50/20 to-teal-50/30 dark:from-slate-900 dark:via-emerald-950/20 dark:to-teal-950/20 rounded-3xl border-2 border-emerald-200/50 dark:border-emerald-800/40 shadow-2xl p-5 sm:p-8 backdrop-blur-sm overflow-hidden">
-                  {/* Animated galaxy border effect - constrained to border */}
+                  {/* Animated fintech border effect */}
                   <div className="absolute inset-0 rounded-3xl overflow-hidden pointer-events-none">
-                    {/* Spark effect in border area */}
-                    <div 
+                    <motion.div
                       className="absolute inset-0 rounded-3xl"
+                      animate={shouldReduceMotion ? undefined : { rotate: [0, 180, 360] }}
+                      transition={shouldReduceMotion ? undefined : { duration: 14, repeat: Infinity, ease: "linear" }}
                       style={{
-                        mask: 'linear-gradient(white, transparent 50%)',
-                        animation: 'flip 6s infinite steps(2, end)',
+                        background:
+                          'conic-gradient(from 0deg, transparent 0deg, transparent 300deg, rgba(16,185,129,0.65) 332deg, rgba(20,184,166,0.7) 350deg, rgba(56,189,248,0.6) 360deg)',
+                        filter: 'blur(0.8px)',
                       }}
-                    >
-                      <div 
-                        className="absolute w-[200%] aspect-square top-0 left-1/2 -translate-x-1/2 -translate-y-[15%]"
-                        style={{
-                          background: 'conic-gradient(from 0deg, transparent 0deg, transparent 320deg, #10b981 340deg, #14b8a6 350deg, #06b6d4 360deg)',
-                          animation: 'rotate 4s linear infinite both',
-                          opacity: 1,
-                          filter: 'blur(1px)',
-                        }}
-                      />
-                    </div>
+                    />
                     
                     {/* Border cutout to reveal only border area */}
                     <div className="absolute inset-[2px] rounded-3xl bg-white dark:bg-slate-900"></div>
                   </div>
-                  {/* Enhanced Animated Background Elements */}
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-500/20 to-teal-500/20 rounded-full blur-3xl animate-pulse"></div>
-                  <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full blur-2xl animate-pulse delay-75"></div>
-                  <div className="absolute top-1/2 left-1/2 w-20 h-20 bg-gradient-to-br from-pink-500/10 to-orange-500/10 rounded-full blur-xl animate-pulse delay-150"></div>
+                  {/* Fintech texture layers */}
+                  <div className="absolute inset-0 opacity-35 bg-[linear-gradient(to_right,rgba(16,185,129,0.14)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,185,129,0.12)_1px,transparent_1px)] [background-size:28px_28px]"></div>
+                  <motion.div
+                    className="absolute -top-12 right-4 w-44 h-44 rounded-full bg-gradient-to-br from-emerald-500/18 to-cyan-500/10 blur-3xl"
+                    animate={shouldReduceMotion ? undefined : { x: [0, 14, 0], y: [0, -10, 0] }}
+                    transition={shouldReduceMotion ? undefined : { duration: 8, repeat: Infinity, ease: "easeInOut" }}
+                  />
+                  <motion.div
+                    className="absolute -bottom-10 left-2 w-40 h-40 rounded-full bg-gradient-to-br from-teal-500/16 to-blue-500/10 blur-3xl"
+                    animate={shouldReduceMotion ? undefined : { x: [0, -10, 0], y: [0, 12, 0] }}
+                    transition={shouldReduceMotion ? undefined : { duration: 9, repeat: Infinity, ease: "easeInOut" }}
+                  />
                   
                   {/* Floating sparkles */}
-                  {[...Array(6)].map((_, i) => (
+                  {calculatorParticles.map((particle, i) => (
                     <motion.div
                       key={i}
-                      className="absolute w-1 h-1 bg-emerald-400 rounded-full"
+                      className="absolute w-1.5 h-1.5 bg-emerald-400/90 rounded-full"
                       style={{
-                        left: `${Math.random() * 100}%`,
-                        top: `${Math.random() * 100}%`,
+                        left: particle.left,
+                        top: particle.top,
                       }}
-                      animate={{
+                      animate={shouldReduceMotion ? undefined : {
                         y: [0, -20, 0],
-                        x: [0, Math.random() * 10 - 5, 0],
-                        opacity: [0.3, 1, 0.3],
-                        scale: [1, 1.5, 1],
+                        x: [0, particle.driftX, 0],
+                        opacity: [0.25, 0.95, 0.25],
+                        scale: [0.9, 1.2, 0.9],
                       }}
-                      transition={{
-                        duration: 2 + Math.random() * 2,
+                      transition={shouldReduceMotion ? undefined : {
+                        duration: particle.duration,
                         repeat: Infinity,
-                        delay: Math.random() * 2,
+                        delay: particle.delay,
                         ease: "easeInOut"
                       }}
                     />
@@ -684,7 +627,7 @@ export default function FeesPage() {
                     <div className="flex items-center gap-3 mb-6">
                       <motion.div 
                         className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/30"
-                        whileHover={{ scale: 1.1, rotate: 5 }}
+                        whileHover={shouldReduceMotion ? undefined : { scale: 1.06, rotate: 3 }}
                         transition={{ type: "spring", stiffness: 300 }}
                       >
                         <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -765,7 +708,7 @@ export default function FeesPage() {
                         value={calculatorService}
                         onChange={(e) => setCalculatorService(e.target.value)}
                         className="w-full px-5 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 text-sm text-slate-900 dark:text-slate-100 bg-white/90 dark:bg-slate-800/80 backdrop-blur-sm hover:bg-white dark:hover:bg-slate-800 font-medium"
-                        whileFocus={{ scale: 1.02 }}
+                        whileFocus={shouldReduceMotion ? undefined : { scale: 1.005 }}
                       >
                         <option value="">Select a service</option>
                         <optgroup label="💳 Card Services">
@@ -814,7 +757,7 @@ export default function FeesPage() {
                               onChange={(e) => setCalculatorAmount(e.target.value)}
                               placeholder="0.00"
                               className="w-full pl-10 pr-5 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 text-base text-slate-900 dark:text-slate-100 bg-white/90 dark:bg-slate-800/80 backdrop-blur-sm hover:bg-white dark:hover:bg-slate-800 font-medium"
-                              whileFocus={{ scale: 1.02 }}
+                              whileFocus={shouldReduceMotion ? undefined : { scale: 1.005 }}
                             />
                           </div>
                         </motion.div>
@@ -847,7 +790,7 @@ export default function FeesPage() {
                             placeholder="1"
                             min="1"
                             className="w-full px-5 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 text-base text-slate-900 dark:text-slate-100 bg-white/90 dark:bg-slate-800/80 backdrop-blur-sm hover:bg-white dark:hover:bg-slate-800 font-medium"
-                            whileFocus={{ scale: 1.02 }}
+                            whileFocus={shouldReduceMotion ? undefined : { scale: 1.005 }}
                           />
                         </motion.div>
                       )}
@@ -864,14 +807,14 @@ export default function FeesPage() {
                         >
                           {getAccountLimits() ? (
                             <div className="space-y-3">
-                              <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 animate-pulse">
+                              <div className="bg-red-50 dark:bg-red-950/30 border-2 border-red-200 dark:border-red-900/40 rounded-xl p-4">
                                 <div className="flex items-center gap-2 mb-2">
-                                  <svg className="w-5 h-5 text-red-500 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
                                   </svg>
-                                  <span className="text-sm font-bold text-red-700">Account Limit Exceeded</span>
+                                  <span className="text-sm font-bold text-red-700 dark:text-red-300">Account Limit Exceeded</span>
                                 </div>
-                                <p className="text-xs text-red-600">{getFeeNote()}</p>
+                                <p className="text-xs text-red-600 dark:text-red-300">{getFeeNote()}</p>
                               </div>
                               <div className="flex justify-between items-center">
                                 <span className="text-sm text-slate-600 dark:text-slate-300">Fee Rate:</span>
@@ -1228,13 +1171,13 @@ export default function FeesPage() {
                 />
                 <FeeRow 
                   label="Outgoing ACH (USA Only)" 
-                  desc={<>Any Bank in the USA. <span className='text-emerald-500 font-bold'>Maximum Fee $5.00</span>, You'll never pay more than $5, regardless of the transaction amount.</>} 
+                  desc={<>Any Bank in the USA. <span className='text-emerald-500 font-bold'>Maximum Fee $5.00</span>, You&apos;ll never pay more than $5, regardless of the transaction amount.</>} 
                   price="1.00%" 
                   period="Per transaction"
                 />
                 <FeeRow 
                   label="Outgoing Domestic Wire" 
-                  desc={<>Sending Wire to any Bank in the USA. <span className='text-emerald-500 font-bold'>Maximum Fee $20.00</span>, You'll never pay more than $20, regardless of the transaction amount.</>} 
+                  desc={<>Sending Wire to any Bank in the USA. <span className='text-emerald-500 font-bold'>Maximum Fee $20.00</span>, You&apos;ll never pay more than $20, regardless of the transaction amount.</>} 
                   price="$10.00 + 1%" 
                   period="Per transaction"
                 />
@@ -1344,8 +1287,9 @@ export default function FeesPage() {
       {/* --- FAQ SECTION --- */}
 <section className="py-16 sm:py-24 bg-gradient-to-br from-slate-50 via-white to-emerald-50/30 dark:from-slate-950 dark:via-slate-900 dark:to-emerald-950/20 relative overflow-hidden">
   {/* Background decorative elements */}
-  <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-emerald-500/10 to-teal-500/10 rounded-full blur-3xl"></div>
-  <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-full blur-2xl"></div>
+  <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(15,23,42,0.08)_1px,transparent_0)] dark:bg-[radial-gradient(circle_at_1px_1px,rgba(148,163,184,0.14)_1px,transparent_0)] [background-size:20px_20px] opacity-35"></div>
+  <div className="absolute inset-0 [mask-image:radial-gradient(ellipse_at_top,black_40%,transparent_78%)] bg-[linear-gradient(to_right,rgba(16,185,129,0.18)_1px,transparent_1px),linear-gradient(to_bottom,rgba(20,184,166,0.12)_1px,transparent_1px)] [background-size:64px_64px] opacity-45"></div>
+  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[34rem] h-[18rem] rounded-full bg-emerald-400/18 dark:bg-emerald-500/12 blur-[110px]"></div>
   
   <div className="container mx-auto px-4 sm:px-6 max-w-7xl relative z-10">
     <motion.div 
@@ -1815,8 +1759,10 @@ export default function FeesPage() {
   
   {/* Decorative background elements */}
   <div className="absolute inset-0 overflow-hidden pointer-events-none">
-    <div className="absolute top-0 left-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl"></div>
-    <div className="absolute bottom-0 right-0 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl"></div>
+    <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(15,23,42,0.07)_1px,transparent_0)] dark:bg-[radial-gradient(circle_at_1px_1px,rgba(148,163,184,0.12)_1px,transparent_0)] [background-size:24px_24px] opacity-30"></div>
+    <div className="absolute inset-0 [mask-image:radial-gradient(ellipse_at_center,black_52%,transparent_84%)] bg-[linear-gradient(to_right,rgba(16,185,129,0.14)_1px,transparent_1px),linear-gradient(to_bottom,rgba(20,184,166,0.1)_1px,transparent_1px)] [background-size:72px_72px] opacity-40"></div>
+    <div className="absolute -top-24 left-1/4 w-[24rem] h-[24rem] rounded-full bg-emerald-400/14 dark:bg-emerald-500/10 blur-[100px]"></div>
+    <div className="absolute -bottom-24 right-10 w-[20rem] h-[20rem] rounded-full bg-teal-400/14 dark:bg-teal-500/10 blur-[90px]"></div>
   </div>
 
   <div className="max-w-6xl mx-auto px-4 sm:px-6 relative z-10">
@@ -1989,7 +1935,7 @@ export default function FeesPage() {
         </svg>
       </Link>
       <p className="text-slate-500 dark:text-slate-400 mt-4 text-sm">
-        No credit check • No minimum deposit • 100% online
+        • No Credit Check • No Minimum Deposit • 100% Online
       </p>
     </motion.div>
 
